@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { signOut } from "@/app/login/actions";
 
 const navigation = [
   ["Overview", "/dashboard"],
@@ -9,16 +10,22 @@ const navigation = [
   ["Monthly finance", "/finance"],
 ];
 
-export function AppShell({ children, section = "Operations" }: { children: React.ReactNode; section?: string }) {
+export function AppShell({ children, name, organization, role }: {
+  children: React.ReactNode;
+  name: string;
+  organization: string;
+  role: "owner" | "partner";
+}) {
+  const links = role === "owner" ? [...navigation, ["Team", "/team"]] : navigation;
   return <div className="shell">
     <aside className="sidebar">
       <Link href="/dashboard" className="brand"><span className="brandMark">S</span>ShowMetra</Link>
-      <div className="navLabel">Workspace</div>
-      <nav className="nav">{navigation.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</nav>
-      <div className="sidebarFooter"><div className="profileName">ShowMetra owner</div><div className="profileRole">Owner · Full access</div></div>
+      <div className="navLabel">{organization}</div>
+      <nav className="nav">{links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</nav>
+      <div className="sidebarFooter"><div className="profileName">{name}</div><div className="profileRole">{role === "owner" ? "Owner · Full access" : "Partner · Assigned shows"}</div></div>
     </aside>
     <main className="main">
-      <header className="topbar"><div className="topbarTitle">{section}</div><div className="topbarActions"><span className="badge brand">September 2026</span><button className="button small">Sign out</button></div></header>
+      <header className="topbar"><div className="topbarTitle">{organization}</div><div className="topbarActions"><span className="badge brand">Live workspace</span><form action={signOut}><button className="button small" type="submit">Sign out</button></form></div></header>
       <div className="content">{children}</div>
     </main>
   </div>;

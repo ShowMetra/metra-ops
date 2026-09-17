@@ -124,6 +124,21 @@ tr:last-child td { border-bottom: 0; }
 .field label { color: var(--muted); font-size: 11px; font-weight: 700; }
 .field input, .field select, .field textarea { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 9px; background: white; color: var(--ink); }
 .field.full { grid-column: 1 / -1; }
+.authShell { display: grid; place-items: center; padding: 20px; }
+.authCard { width: 100%; max-width: 440px; padding: 30px; }
+.authCard .brand { margin-left: 0; }
+.authForm { margin-top: 26px; }
+.authFooter { margin: 20px 0 0; color: var(--muted); font-size: 12px; text-align: center; }
+.authFooter a { color: var(--brand); font-weight: 700; }
+.authButton { margin-top: 24px; }
+.emptyState { padding: 28px 12px; color: var(--muted); text-align: center; line-height: 1.7; }
+.emptyCard { margin-top: 18px; }
+.notice { margin: 0 0 18px; padding: 12px 14px; border-radius: 10px; background: var(--brand-soft); color: #42369c; }
+.notice.success { background: var(--positive-soft); color: var(--positive); }
+.notice.danger { background: var(--danger-soft); color: var(--danger); }
+.copyRow, .buttonRow { display: flex; gap: 8px; }
+.copyRow input { min-width: 0; flex: 1; }
+.helpText { color: var(--muted); font-size: 11px; line-height: 1.5; }
 
 @media (max-width: 1050px) {
   .grid4 { grid-template-columns: repeat(2,1fr); }

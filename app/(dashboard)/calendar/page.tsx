@@ -1,22 +1,26 @@
-import { AppShell } from "@/components/app-shell";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireWorkspace } from "@/lib/workspace";
 
-const slots = [
-  { row: 0, col: 1, content: <div className="event"><strong>Acrobatic Pirate</strong><br/>Stella Palace · 20:30</div> },
-  { row: 0, col: 3, content: <div className="event green"><strong>Fire Show I</strong><br/>Lyttos Beach · 21:00</div> },
-  { row: 1, col: 2, content: <div className="event orange"><strong>Cuba Latin</strong><br/>Eliros Mare · 20:45</div> },
-  { row: 1, col: 5, content: <div className="event"><strong>Aerial II</strong><br/>Pilot Beach · 21:15</div> },
-];
+export default async function CalendarPage() {
+  const workspace = await requireWorkspace();
+  const supabase = await createSupabaseServerClient();
+  const from = new Date();
+  from.setUTCDate(from.getUTCDate() - 14);
+  const to = new Date();
+  to.setUTCMonth(to.getUTCMonth() + 4);
+  const { data: performances } = await supabase.from("performances")
+    .select("id, starts_at, ends_at, status, operational_notes, shows(name), hotels(name, address)")
+    .gte("starts_at", from.toISOString()).lt("starts_at", to.toISOString()).order("starts_at");
 
-export default function CalendarPage() {
-  const days = ["Mon 14", "Tue 15", "Wed 16", "Thu 17", "Fri 18", "Sat 19", "Sun 20"];
-  return <AppShell section="Schedule">
-    <div className="pageHeader"><div><p className="eyebrow">14–20 September</p><h1>Performance calendar</h1><p className="lede">Plan the week and confirm what actually happened.</p></div><div><button className="button">Today</button> <button className="button primary">Add performance</button></div></div>
-    <div className="card tableWrap">
-      <div className="calendar">
-        <div className="head" />{days.map(day => <div className="head" key={day}>{day}</div>)}
-        {["19:00", "20:30", "22:00"].flatMap((time,row) => [<div className="time" key={time}>{time}</div>, ...days.map((day,col) => <div key={`${time}-${day}`}>{slots.find(s => s.row===row && s.col===col)?.content}</div>)])}
-      </div>
-    </div>
-    <div className="card section"><div className="sectionHeader"><h2>Needs confirmation</h2><span className="badge warning">5 performances</span></div><div className="sectionBody tableWrap"><table><thead><tr><th>Date</th><th>Show</th><th>Hotel</th><th>Status</th><th></th></tr></thead><tbody><tr><td>16 Sep · 21:00</td><td className="strong">Fire Show I</td><td>Lyttos Beach</td><td><span className="badge warning">Planned</span></td><td className="num"><button className="button small primary">Confirm</button></td></tr></tbody></table></div></div>
-  </AppShell>;
+  return <>
+    <div className="pageHeader"><div><p className="eyebrow">Live schedule</p><h1>Performance calendar</h1><p className="lede">Upcoming and recently completed performances visible to your role.</p></div></div>
+    <section className="card"><div className="sectionBody tableWrap" style={{ paddingTop: 8 }}><table><thead><tr><th>Date & time</th><th>Show</th><th>Hotel</th><th>Status</th><th>Notes</th></tr></thead><tbody>
+      {(performances ?? []).map(item => {
+        const show = Array.isArray(item.shows) ? item.shows[0] : item.shows;
+        const hotel = Array.isArray(item.hotels) ? item.hotels[0] : item.hotels;
+        return <tr key={item.id}><td className="strong">{new Date(item.starts_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: workspace.organization.timezone })}</td><td>{show?.name ?? "—"}</td><td><div>{hotel?.name ?? "—"}</div><div className="sub">{hotel?.address}</div></td><td><span className={`badge ${item.status === "completed" ? "success" : item.status === "planned" ? "brand" : "warning"}`}>{item.status.replaceAll("_", " ")}</span></td><td className="muted">{item.operational_notes || "—"}</td></tr>;
+      })}
+      {!performances?.length && <tr><td colSpan={5}><div className="emptyState">No performances yet. The next step is creating the first show, hotel and performance.</div></td></tr>}
+    </tbody></table></div></section>
+  </>;
 }

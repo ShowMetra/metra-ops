@@ -1,14 +1,24 @@
-import { AppShell } from "@/components/app-shell";
-import { shows } from "@/lib/demo-data";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireWorkspace } from "@/lib/workspace";
 
-export default function ShowsPage() {
-  return <AppShell section="Show management">
-    <div className="pageHeader"><div><p className="eyebrow">Season 2026</p><h1>Shows</h1><p className="lede">Teams, hotel rates and shareable artist schedules.</p></div><button className="button primary">Create show</button></div>
-    <div className="showGrid">{shows.map(show => <article className="card showCard" key={show.name}>
-      <div className="showTop"><div><h2>{show.name}</h2><div className="sub">Partner · {show.partner}</div></div><span className="badge success">Active</span></div>
-      <div className="showMeta"><div><span>Artists</span><strong>{show.artists}</strong></div><div><span>This month</span><strong>{show.performances} shows</strong></div><div><span>Default rate</span><strong>€{show.rate}</strong></div><div><span>Schedule</span><strong>Public link</strong></div></div>
-      <div className="shareLink">showmetra.com/schedule/{show.token}</div>
-      <div style={{ display: "flex", gap: 8, marginTop: 12 }}><button className="button small">Copy link</button><button className="button small">Open show</button></div>
-    </article>)}</div>
-  </AppShell>;
+export default async function ShowsPage() {
+  await requireWorkspace();
+  const supabase = await createSupabaseServerClient();
+  const [{ data: shows }, { data: cast }, { data: performances }, { data: links }] = await Promise.all([
+    supabase.from("shows").select("id, name, description, status, partner_user_id").order("name"),
+    supabase.from("show_artists").select("show_id"),
+    supabase.from("performances").select("show_id"),
+    supabase.from("schedule_share_links").select("show_id, is_active"),
+  ]);
+
+  return <>
+    <div className="pageHeader"><div><p className="eyebrow">Operations</p><h1>Shows</h1><p className="lede">Your assigned shows, casts and public schedule status.</p></div></div>
+    <div className="showGrid">{(shows ?? []).map(show => {
+      const artistCount = cast?.filter(item => item.show_id === show.id).length ?? 0;
+      const performanceCount = performances?.filter(item => item.show_id === show.id).length ?? 0;
+      const hasLink = links?.some(item => item.show_id === show.id && item.is_active) ?? false;
+      return <article className="card showCard" key={show.id}><div className="showTop"><div><h2>{show.name}</h2><div className="sub">{show.description || "No description"}</div></div><span className={`badge ${show.status === "active" ? "success" : "warning"}`}>{show.status}</span></div><div className="showMeta"><div><span>Artists</span><strong>{artistCount}</strong></div><div><span>Performances</span><strong>{performanceCount}</strong></div><div><span>Schedule link</span><strong>{hasLink ? "Active" : "Not created"}</strong></div><div><span>Access</span><strong>Assigned team</strong></div></div></article>;
+    })}</div>
+    {!shows?.length && <div className="card emptyCard"><div className="emptyState"><strong>No shows yet.</strong><br />Create the first show after the owner invites the responsible partner.</div></div>}
+  </>;
 }

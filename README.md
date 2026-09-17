@@ -33,6 +33,16 @@ npm run dev
 
 Apply `supabase/migrations` to a new Supabase project, then place the project URL and anon key in `.env.local`.
 
+## Access flow
+
+1. The owner creates an account at `/register` and confirms their email.
+2. The owner creates the organization workspace.
+3. In **Team**, the owner creates a seven-day invitation link for a partner email.
+4. The partner opens the link, registers with the invited email and joins the organization.
+5. Supabase RLS restricts partners to shows, artists, performances and expenses assigned to them.
+
+The application uses Supabase Auth cookies refreshed by the Next.js `proxy.ts` entry point. Never expose a Supabase service-role key to the browser.
+
 ## Project structure
 
 - `app/` — Next.js pages
