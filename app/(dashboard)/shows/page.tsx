@@ -1,8 +1,10 @@
+import { SubmitButton } from "@/components/submit-button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireWorkspace } from "@/lib/workspace";
+import { createShow } from "./actions";
 
-export default async function ShowsPage() {
-  await requireWorkspace();
+export default async function ShowsPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
+  const [{ error, message }, workspace] = await Promise.all([searchParams, requireWorkspace()]);
   const supabase = await createSupabaseServerClient();
   const [{ data: shows }, { data: cast }, { data: performances }, { data: links }] = await Promise.all([
     supabase.from("shows").select("id, name, description, status, partner_user_id").order("name"),
@@ -13,6 +15,15 @@ export default async function ShowsPage() {
 
   return <>
     <div className="pageHeader"><div><p className="eyebrow">Operations</p><h1>Shows</h1><p className="lede">Your assigned shows, casts and public schedule status.</p></div></div>
+    {error && <div className="notice danger">{error}</div>}{message && <div className="notice success">{message}</div>}
+    {workspace.membership.role === "partner" && <section className="card" style={{ marginBottom: 22 }}><div className="sectionHeader"><h2>Create show</h2><span className="badge brand">Partner</span></div><div className="sectionBody">
+      <form action={createShow} className="formGrid">
+        <div className="field"><label htmlFor="show_name">Show name</label><input id="show_name" name="name" required /></div>
+        <div className="field"><label htmlFor="show_code">Internal code</label><input id="show_code" name="code" placeholder="Optional" /></div>
+        <div className="field full"><label htmlFor="show_description">Description</label><textarea id="show_description" name="description" rows={3} /></div>
+        <div className="field full"><SubmitButton className="button primary" type="submit" pendingLabel="Creating show…">Create show</SubmitButton></div>
+      </form>
+    </div></section>}
     <div className="showGrid">{(shows ?? []).map(show => {
       const artistCount = cast?.filter(item => item.show_id === show.id).length ?? 0;
       const performanceCount = performances?.filter(item => item.show_id === show.id).length ?? 0;

@@ -57,9 +57,11 @@ h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
 .button.primary { border-color: var(--brand); background: var(--brand); color: white; }
 .button.ghost { background: transparent; }
 .button.small { min-height: 32px; padding: 0 11px; font-size: 12px; }
+.button:disabled { cursor: wait; opacity: .65; }
 
 .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
 .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }
+.grid2 > :only-child { grid-column: 1 / -1; }
 .card { border: 1px solid var(--line); border-radius: 15px; background: var(--paper); box-shadow: var(--shadow); }
 .metric { padding: 20px; }
 .metricLabel { color: var(--muted); font-size: 12px; font-weight: 650; }

@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 
 export async function createExpense(formData: FormData) {
   const workspace = await requireWorkspace();
+  if (workspace.membership.role !== "partner") redirect("/expenses?error=Only+partners+can+create+expenses");
   const showId = String(formData.get("show_id") ?? "");
   const expenseDate = String(formData.get("expense_date") ?? "");
   const category = String(formData.get("category") ?? "").trim();
@@ -31,7 +32,7 @@ export async function createExpense(formData: FormData) {
     status,
     created_by: workspace.user.id,
   });
-  if (error) redirect(`/expenses?error=${encodeURIComponent(error.message)}`);
+  if (error) redirect("/expenses?error=Could+not+save+the+expense");
   revalidatePath("/expenses");
   redirect(`/expenses?message=${status === "submitted" ? "Expense+submitted" : "Draft+saved"}`);
 }
