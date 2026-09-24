@@ -27,6 +27,8 @@ export async function createArtist(formData: FormData) {
     .select("id")
     .eq("id", showId)
     .eq("organization_id", workspace.organization.id)
+    .eq("partner_user_id", workspace.user.id)
+    .eq("status", "planned")
     .maybeSingle();
   if (!show) redirect(artistsError("Choose an available show."));
 

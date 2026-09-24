@@ -8,7 +8,7 @@ export default async function HotelsPage({ searchParams }: { searchParams: Promi
   const supabase = await createSupabaseServerClient();
   const [{ data: hotels }, { data: shows }, { data: rates }] = await Promise.all([
     supabase.from("hotels").select("id, name, address, billing_name, billing_email, tax_id, status").order("name"),
-    supabase.from("shows").select("id, name").eq("status", "active").order("name"),
+    supabase.from("shows").select("id, name").eq("status", "planned").order("name"),
     supabase.from("hotel_show_rates").select("id, price_per_performance, currency, valid_from, valid_to, hotels(name), shows(name)").order("valid_from", { ascending: false }),
   ]);
   const today = new Date().toISOString().slice(0, 10);

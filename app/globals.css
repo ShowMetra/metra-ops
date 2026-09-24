@@ -55,6 +55,7 @@ h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
 
 .button { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 15px; border: 1px solid var(--line); border-radius: 10px; background: white; color: var(--ink); font-weight: 650; cursor: pointer; }
 .button.primary { border-color: var(--brand); background: var(--brand); color: white; }
+.button.danger { border-color: #efc9cf; background: var(--danger-soft); color: var(--danger); }
 .button.ghost { background: transparent; }
 .button.small { min-height: 32px; padding: 0 11px; font-size: 12px; }
 .button:disabled { cursor: wait; opacity: .65; }
@@ -108,6 +109,10 @@ tr:last-child td { border-bottom: 0; }
 .showMeta { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 22px 0; }
 .showMeta span { display: block; color: var(--muted); font-size: 11px; }
 .showMeta strong { display: block; margin-top: 4px; }
+.showEditor { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+.showEditor summary { color: var(--brand); cursor: pointer; font-weight: 700; }
+.compactForm { margin-top: 14px; }
+.showActions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
 .shareLink { padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: #faf9f6; color: var(--muted); font-family: ui-monospace, monospace; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .publicShell { min-height: 100vh; background: #f6f5f1; }

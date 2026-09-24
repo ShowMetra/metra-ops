@@ -15,11 +15,21 @@ export async function createExpense(formData: FormData) {
   const amount = Number(formData.get("amount"));
   const paidBy = String(formData.get("paid_by") ?? "partner");
   const status = String(formData.get("intent") ?? "draft") === "submitted" ? "submitted" : "draft";
-  if (!showId || !/^\d{4}-\d{2}-\d{2}$/.test(expenseDate) || !category || !Number.isFinite(amount) || amount <= 0) {
+  if (!showId || !/^\d{4}-\d{2}-\d{2}$/.test(expenseDate) || !category || !Number.isFinite(amount) || amount <= 0 || !["partner", "company"].includes(paidBy)) {
     redirect("/expenses?error=Complete+the+required+expense+fields");
   }
 
   const supabase = await createSupabaseServerClient();
+  const { data: show } = await supabase
+    .from("shows")
+    .select("id")
+    .eq("id", showId)
+    .eq("organization_id", workspace.organization.id)
+    .eq("partner_user_id", workspace.user.id)
+    .eq("status", "planned")
+    .maybeSingle();
+  if (!show) redirect("/expenses?error=Choose+one+of+your+planned+shows");
+
   const { error } = await supabase.from("expenses").insert({
     organization_id: workspace.organization.id,
     show_id: showId,

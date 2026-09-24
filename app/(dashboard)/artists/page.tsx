@@ -8,7 +8,7 @@ export default async function ArtistsPage({ searchParams }: { searchParams: Prom
   const supabase = await createSupabaseServerClient();
   const [{ data: artists }, { data: shows }] = await Promise.all([
     supabase.from("artists").select("id, full_name, artist_code, status, artist_contracts(monthly_salary, extra_day_rate, currency, valid_from, valid_to), show_artists(shows(name))").order("full_name"),
-    supabase.from("shows").select("id, name").eq("status", "active").order("name"),
+    supabase.from("shows").select("id, name").eq("status", "planned").order("name"),
   ]);
   const today = new Date().toISOString().slice(0, 10);
 

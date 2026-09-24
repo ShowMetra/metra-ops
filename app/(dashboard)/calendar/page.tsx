@@ -14,7 +14,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
     supabase.from("performances")
       .select("id, starts_at, ends_at, status, operational_notes, shows(name), hotels(name, address)")
       .gte("starts_at", from.toISOString()).lt("starts_at", to.toISOString()).order("starts_at"),
-    supabase.from("shows").select("id, name").eq("status", "active").order("name"),
+    supabase.from("shows").select("id, name").eq("status", "planned").order("name"),
     supabase.from("hotels").select("id, name").eq("status", "active").order("name"),
   ]);
   const today = new Date().toLocaleDateString("en-CA", { timeZone: workspace.organization.timezone });

@@ -7,7 +7,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const [{ error, message }, workspace] = await Promise.all([searchParams, requireWorkspace()]);
   const supabase = await createSupabaseServerClient();
   const [{ data: shows }, { data: expenses }] = await Promise.all([
-    supabase.from("shows").select("id, name").eq("status", "active").order("name"),
+    supabase.from("shows").select("id, name").eq("status", "planned").order("name"),
     supabase.from("expenses").select("id, expense_date, category, description, amount, currency, paid_by, status, shows(name)").order("expense_date", { ascending: false }).limit(30),
   ]);
   const today = new Date().toISOString().slice(0, 10);

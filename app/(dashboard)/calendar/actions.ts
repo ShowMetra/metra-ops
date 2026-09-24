@@ -23,7 +23,7 @@ export async function createPerformance(formData: FormData) {
 
   const supabase = await createSupabaseServerClient();
   const [{ data: show }, { data: hotel }] = await Promise.all([
-    supabase.from("shows").select("id").eq("id", showId).eq("organization_id", workspace.organization.id).maybeSingle(),
+    supabase.from("shows").select("id").eq("id", showId).eq("organization_id", workspace.organization.id).eq("partner_user_id", workspace.user.id).eq("status", "planned").maybeSingle(),
     supabase.from("hotels").select("id").eq("id", hotelId).eq("organization_id", workspace.organization.id).eq("status", "active").maybeSingle(),
   ]);
   if (!show || !hotel) redirect(calendarError("Choose an available show and hotel."));

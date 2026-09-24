@@ -48,7 +48,7 @@ export async function createHotelRate(formData: FormData) {
   const supabase = await createSupabaseServerClient();
   const [{ data: hotel }, { data: show }] = await Promise.all([
     supabase.from("hotels").select("id").eq("id", hotelId).eq("organization_id", workspace.organization.id).maybeSingle(),
-    supabase.from("shows").select("id").eq("id", showId).eq("organization_id", workspace.organization.id).maybeSingle(),
+    supabase.from("shows").select("id").eq("id", showId).eq("organization_id", workspace.organization.id).eq("partner_user_id", workspace.user.id).eq("status", "planned").maybeSingle(),
   ]);
   if (!hotel || !show) redirect(hotelsError("Choose an available hotel and show."));
 
