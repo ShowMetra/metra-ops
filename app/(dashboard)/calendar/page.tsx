@@ -15,13 +15,15 @@ const localParts = (value: Date, timeZone: string) => {
 export default async function CalendarPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
   const [{ error, message }, workspace] = await Promise.all([searchParams, requireWorkspace()]);
   const supabase = await createSupabaseServerClient();
-  const [{ data: performances }, { data: shows }, { data: hotels }] = await Promise.all([
+  const [{ data: performances }, { data: shows }, { data: hotels }, { data: profiles }] = await Promise.all([
     supabase.from("performances")
-      .select("id, show_id, hotel_id, starts_at, ends_at, operational_notes, shows(name), hotels(name, address)")
+      .select("id, show_id, hotel_id, starts_at, ends_at, operational_notes, shows(name, partner_user_id), hotels(name, address)")
       .order("starts_at", { ascending: false }),
     supabase.from("shows").select("id, name").eq("status", "planned").order("name"),
     supabase.from("hotels").select("id, name").eq("status", "active").order("name"),
+    supabase.from("profiles").select("id, full_name, email"),
   ]);
+  const partnerNames = new Map((profiles ?? []).map(profile => [profile.id, profile.full_name || profile.email || "Partner"]));
   const now = new Date();
   const tomorrow = new Date(now.getTime() + 86400000);
   const defaultDate = localParts(tomorrow, workspace.organization.timezone).date;
@@ -40,7 +42,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         <div className="field full"><SubmitButton className="button primary" type="submit" pendingLabel="Creating performance…">Create performance</SubmitButton></div>
       </form> : <div className="emptyState">Create a show and ask the owner to add a hotel first.</div>}
     </div></section>}
-    <section className="card"><div className="sectionBody tableWrap" style={{ paddingTop: 8 }}><table><thead><tr><th>Date & time</th><th>Show</th><th>Hotel</th><th>Status</th><th>Notes</th>{workspace.membership.role === "partner" && <th>Actions</th>}</tr></thead><tbody>
+    <section className="card"><div className="sectionBody tableWrap" style={{ paddingTop: 8 }}><table><thead><tr><th>Date & time</th><th>Show</th><th>Hotel</th>{workspace.membership.role === "owner" && <th>Partner</th>}<th>Status</th><th>Notes</th>{workspace.membership.role === "partner" && <th>Actions</th>}</tr></thead><tbody>
       {(performances ?? []).map(item => {
         const show = Array.isArray(item.shows) ? item.shows[0] : item.shows;
         const hotel = Array.isArray(item.hotels) ? item.hotels[0] : item.hotels;
@@ -53,6 +55,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
           <td className="strong">{start.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: workspace.organization.timezone })}</td>
           <td>{show?.name ?? "—"}</td>
           <td><div>{hotel?.name ?? "—"}</div><div className="sub">{hotel?.address}</div></td>
+          {workspace.membership.role === "owner" && <td>{show?.partner_user_id ? partnerNames.get(show.partner_user_id) ?? "Unknown" : "—"}</td>}
           <td><span className={`badge ${isFinished ? "success" : "brand"}`}>{isFinished ? "Finished" : "Planned"}</span></td>
           <td className="muted">{item.operational_notes || "—"}</td>
           {workspace.membership.role === "partner" && <td>{isFinished ? <span className="muted">Locked</span> : <div className="showActions">
@@ -70,7 +73,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
           </div>}</td>}
         </tr>;
       })}
-      {!performances?.length && <tr><td colSpan={workspace.membership.role === "partner" ? 6 : 5}><div className="emptyState">No performances yet. Create the first future calendar entry.</div></td></tr>}
+      {!performances?.length && <tr><td colSpan={6}><div className="emptyState">No performances yet. Create the first future calendar entry.</div></td></tr>}
     </tbody></table></div></section>
   </>;
 }

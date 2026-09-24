@@ -6,12 +6,14 @@ import { createShow } from "./actions";
 export default async function ShowsPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
   const [{ error, message }, workspace] = await Promise.all([searchParams, requireWorkspace()]);
   const supabase = await createSupabaseServerClient();
-  const [{ data: shows }, { data: cast }, { data: performances }, { data: links }] = await Promise.all([
+  const [{ data: shows }, { data: cast }, { data: performances }, { data: links }, { data: profiles }] = await Promise.all([
     supabase.from("shows").select("id, name, code, description, partner_user_id").order("name"),
     supabase.from("show_artists").select("show_id"),
     supabase.from("performances").select("show_id"),
     supabase.from("schedule_share_links").select("show_id, is_active"),
+    supabase.from("profiles").select("id, full_name, email"),
   ]);
+  const partnerNames = new Map((profiles ?? []).map(profile => [profile.id, profile.full_name || profile.email || "Partner"]));
 
   return <>
     <div className="pageHeader"><div><p className="eyebrow">Operations</p><h1>Shows</h1><p className="lede">Your assigned shows, casts and public schedule status.</p></div></div>
@@ -29,7 +31,7 @@ export default async function ShowsPage({ searchParams }: { searchParams: Promis
       const performanceCount = performances?.filter(item => item.show_id === show.id).length ?? 0;
       const hasLink = links?.some(item => item.show_id === show.id && item.is_active) ?? false;
       return <article className="card showCard" key={show.id}>
-        <div className="showTop"><div><h2>{show.name}</h2><div className="sub">{show.code ? `${show.code} · ` : ""}{show.description || "No description"}</div></div></div>
+        <div className="showTop"><div><h2>{show.name}</h2><div className="sub">{show.code ? `${show.code} · ` : ""}{show.description || "No description"}</div></div>{workspace.membership.role === "owner" && <span className="badge brand">Partner · {partnerNames.get(show.partner_user_id) ?? "Unknown"}</span>}</div>
         <div className="showMeta"><div><span>Artists</span><strong>{artistCount}</strong></div><div><span>Calendar entries</span><strong>{performanceCount}</strong></div><div><span>Schedule link</span><strong>{hasLink ? "Active" : "Not created"}</strong></div><div><span>Access</span><strong>{workspace.membership.role === "partner" ? "Assigned" : "Read only"}</strong></div></div>
       </article>;
     })}</div>

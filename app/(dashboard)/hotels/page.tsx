@@ -6,11 +6,13 @@ import { createHotel, createHotelRate } from "./actions";
 export default async function HotelsPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
   const [{ error, message }, workspace] = await Promise.all([searchParams, requireWorkspace()]);
   const supabase = await createSupabaseServerClient();
-  const [{ data: hotels }, { data: shows }, { data: rates }] = await Promise.all([
+  const [{ data: hotels }, { data: shows }, { data: rates }, { data: profiles }] = await Promise.all([
     supabase.from("hotels").select("id, name, address, billing_name, billing_email, tax_id, status").order("name"),
     supabase.from("shows").select("id, name").eq("status", "planned").order("name"),
-    supabase.from("hotel_show_rates").select("id, price_per_performance, currency, valid_from, valid_to, hotels(name), shows(name)").order("valid_from", { ascending: false }),
+    supabase.from("hotel_show_rates").select("id, price_per_performance, currency, valid_from, valid_to, hotels(name), shows(name, partner_user_id)").order("valid_from", { ascending: false }),
+    supabase.from("profiles").select("id, full_name, email"),
   ]);
+  const partnerNames = new Map((profiles ?? []).map(profile => [profile.id, profile.full_name || profile.email || "Partner"]));
   const today = new Date().toISOString().slice(0, 10);
 
   return <>
@@ -41,13 +43,13 @@ export default async function HotelsPage({ searchParams }: { searchParams: Promi
       {(hotels ?? []).map(hotel => <tr key={hotel.id}><td className="strong">{hotel.name}</td><td>{hotel.address || "—"}</td><td><div>{hotel.billing_name || "—"}</div><div className="sub">{hotel.billing_email || hotel.tax_id || "No billing details"}</div></td><td><span className={`badge ${hotel.status === "active" ? "success" : "warning"}`}>{hotel.status}</span></td></tr>)}
       {!hotels?.length && <tr><td colSpan={4}><div className="emptyState">No hotels yet.</div></td></tr>}
     </tbody></table></div></section>
-    <section className="card section"><div className="sectionHeader"><h2>Current rates</h2><span className="badge">{rates?.length ?? 0}</span></div><div className="sectionBody tableWrap"><table><thead><tr><th>Hotel</th><th>Show</th><th>Valid from</th><th className="num">Rate</th></tr></thead><tbody>
+    <section className="card section"><div className="sectionHeader"><h2>Current rates</h2><span className="badge">{rates?.length ?? 0}</span></div><div className="sectionBody tableWrap"><table><thead><tr><th>Hotel</th><th>Show</th>{workspace.membership.role === "owner" && <th>Partner</th>}<th>Valid from</th><th className="num">Rate</th></tr></thead><tbody>
       {(rates ?? []).map(rate => {
         const hotel = Array.isArray(rate.hotels) ? rate.hotels[0] : rate.hotels;
         const show = Array.isArray(rate.shows) ? rate.shows[0] : rate.shows;
-        return <tr key={rate.id}><td className="strong">{hotel?.name ?? "Hotel"}</td><td>{show?.name ?? "Show"}</td><td>{new Date(`${rate.valid_from}T00:00:00Z`).toLocaleDateString("en-GB")}</td><td className="num strong">{new Intl.NumberFormat("en-GB", { style: "currency", currency: rate.currency }).format(rate.price_per_performance)}</td></tr>;
+        return <tr key={rate.id}><td className="strong">{hotel?.name ?? "Hotel"}</td><td>{show?.name ?? "Show"}</td>{workspace.membership.role === "owner" && <td>{show?.partner_user_id ? partnerNames.get(show.partner_user_id) ?? "Unknown" : "—"}</td>}<td>{new Date(`${rate.valid_from}T00:00:00Z`).toLocaleDateString("en-GB")}</td><td className="num strong">{new Intl.NumberFormat("en-GB", { style: "currency", currency: rate.currency }).format(rate.price_per_performance)}</td></tr>;
       })}
-      {!rates?.length && <tr><td colSpan={4}><div className="emptyState">No rates yet.</div></td></tr>}
+      {!rates?.length && <tr><td colSpan={workspace.membership.role === "owner" ? 5 : 4}><div className="emptyState">No rates yet.</div></td></tr>}
     </tbody></table></div></section>
   </>;
 }
