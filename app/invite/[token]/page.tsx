@@ -15,7 +15,7 @@ export default async function InvitationPage({ params, searchParams }: { params:
 
   const unavailable = !invite || invite.accepted || invite.expired;
   return <div className="publicShell authShell"><main className="card authCard">
-    <div className="brand"><span className="brandMark">S</span>ShowMetra</div>
+    <div className="brand"><span className="brandMark">R</span>Remarc Entertainment</div>
     <p className="eyebrow">Partner invitation</p>
     {unavailable ? <><h1>Invitation unavailable</h1><p className="lede">This link is invalid, expired or has already been accepted. Ask the owner for a new invitation.</p><Link className="button authButton" href="/login">Go to sign in</Link></> : <>
       <h1>Join {invite.organizationName}</h1><p className="lede">You were invited as a partner using <strong>{invite.email}</strong>.</p>

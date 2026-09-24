@@ -1,6 +1,6 @@
-# ShowMetra Operations
+# Remarc Entertainment Operations
 
-Internal scheduling and finance workspace for the ShowMetra entertainment agency.
+Internal scheduling and finance workspace for Remarc Entertainment.
 
 ## First vertical slice
 

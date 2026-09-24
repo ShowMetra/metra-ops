@@ -11,11 +11,11 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
   if (member) redirect("/dashboard");
 
   return <div className="publicShell authShell"><main className="card authCard">
-    <div className="brand"><span className="brandMark">S</span>ShowMetra</div>
+    <div className="brand"><span className="brandMark">R</span>Remarc Entertainment</div>
     <p className="eyebrow">One final step</p><h1>Create the company</h1><p className="lede">This becomes your private workspace. You can invite partners after setup.</p>
     <form action={createOrganization} className="formGrid authForm">
-      <div className="field full"><label htmlFor="organization_name">Company name</label><input id="organization_name" name="name" defaultValue="ShowMetra" required /></div>
-      <div className="field full"><label htmlFor="organization_slug">Workspace slug</label><input id="organization_slug" name="slug" defaultValue="showmetra" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required /></div>
+      <div className="field full"><label htmlFor="organization_name">Company name</label><input id="organization_name" name="name" defaultValue="Remarc Entertainment" required /></div>
+      <div className="field full"><label htmlFor="organization_slug">Workspace slug</label><input id="organization_slug" name="slug" defaultValue="remarc-entertainment" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required /></div>
       {error && <div className="field full"><span className="badge danger">{error}</span></div>}
       <div className="field full"><button className="button primary" type="submit">Create workspace</button></div>
     </form>

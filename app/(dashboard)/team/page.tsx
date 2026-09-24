@@ -19,7 +19,7 @@ export default async function TeamPage() {
   const profileMap = new Map((profiles ?? []).map(profile => [profile.id, profile]));
 
   return <>
-    <div className="pageHeader"><div><p className="eyebrow">Access management</p><h1>Team</h1><p className="lede">Invite partners and manage who can access the ShowMetra workspace.</p></div></div>
+    <div className="pageHeader"><div><p className="eyebrow">Access management</p><h1>Team</h1><p className="lede">Invite partners and manage who can access the Remarc Entertainment workspace.</p></div></div>
     <div className="grid2">
       <section className="card"><div className="sectionHeader"><h2>Invite partner</h2><span className="badge brand">Owner only</span></div><div className="sectionBody"><InvitePartnerForm /></div></section>
       <section className="card"><div className="sectionHeader"><h2>Members</h2><span className="badge">{memberships?.length ?? 0}</span></div><div className="sectionBody"><div className="list">
