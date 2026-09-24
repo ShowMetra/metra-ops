@@ -32,8 +32,12 @@ a { color: inherit; text-decoration: none; }
   position: sticky; top: 0; height: 100vh; padding: 28px 18px;
   border-right: 1px solid var(--line); background: #fcfbf8;
 }
-.brand { display: flex; gap: 10px; align-items: center; margin: 0 8px 34px; font-weight: 750; font-size: 17px; }
-.brandMark { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; color: white; background: var(--brand); }
+.brand { display: flex; gap: 11px; align-items: center; margin: 0 8px 34px; }
+.brandMark { width: 40px; height: 40px; flex: 0 0 40px; }
+.brandText { display: grid; color: inherit; line-height: 1; }
+.brandText > span { font-family: Didot, "Bodoni 72", "Bodoni MT", "Times New Roman", serif; font-size: 18px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+.brandText > small { margin-top: 5px; font-size: 7px; font-weight: 750; letter-spacing: .21em; text-transform: uppercase; }
+.publicBrand { margin-left: 0; }
 .navLabel { padding: 0 10px; margin: 24px 0 8px; color: #a09f9a; font-size: 10px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
 .nav { display: grid; gap: 4px; }
 .nav a { padding: 11px 12px; border-radius: 10px; color: #5d5d66; }

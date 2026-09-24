@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signOut } from "@/app/login/actions";
+import { Brand } from "@/components/brand";
 
 const navigation = [
   ["Overview", "/dashboard"],
@@ -20,7 +21,7 @@ export function AppShell({ children, name, organization, role }: {
   const links = role === "owner" ? [...navigation, ["Team", "/team"]] : navigation;
   return <div className="shell">
     <aside className="sidebar">
-      <Link href="/dashboard" className="brand"><span className="brandMark">R</span>Remarc Entertainment</Link>
+      <Brand href="/dashboard" />
       <div className="navLabel">{organization}</div>
       <nav className="nav">{links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</nav>
       <div className="sidebarFooter"><div className="profileName">{name}</div><div className="profileRole">{role === "owner" ? "Owner · Hotels & finance" : "Partner · Operations"}</div></div>

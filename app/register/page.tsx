@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { registerOwner } from "./actions";
+import { Brand } from "@/components/brand";
 
 export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
   return <div className="publicShell authShell">
     <main className="card authCard">
-      <div className="brand"><span className="brandMark">R</span>Remarc Entertainment</div>
+      <Brand />
       <p className="eyebrow">Owner setup</p><h1>Create your workspace</h1><p className="lede">The owner creates the company first, then invites partners.</p>
       <form action={registerOwner} className="formGrid authForm">
         <div className="field full"><label htmlFor="full_name">Full name</label><input id="full_name" name="full_name" autoComplete="name" required /></div>

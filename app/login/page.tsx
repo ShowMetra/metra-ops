@@ -1,11 +1,12 @@
 import { signIn } from "./actions";
 import Link from "next/link";
+import { Brand } from "@/components/brand";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string; next?: string }> }) {
   const { error, message, next } = await searchParams;
   return <div className="publicShell" style={{ display: "grid", placeItems: "center", padding: 20 }}>
     <main className="card" style={{ width: "100%", maxWidth: 420, padding: 30 }}>
-      <div className="brand"><span className="brandMark">R</span>Remarc Entertainment</div>
+      <Brand />
       <p className="eyebrow">Operations</p><h1>Welcome back</h1><p className="lede">Sign in as an owner or partner.</p>
       <form action={signIn} className="formGrid" style={{ marginTop: 26 }}>
         <input type="hidden" name="next" value={next ?? "/dashboard"} />

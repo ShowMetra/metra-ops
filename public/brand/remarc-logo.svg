@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">Remarc Entertainment</title>
+  <desc id="description">A blue circular Remarc wordmark framed by overlapping pink, lime, orange, and green circles.</desc>
+  <g shape-rendering="geometricPrecision">
+    <circle cx="220" cy="250" r="205" fill="#D4E600"/>
+    <circle cx="278" cy="218" r="206" fill="#EC0878"/>
+    <circle cx="302" cy="264" r="204" fill="#FDB83A"/>
+    <circle cx="237" cy="294" r="190" fill="#69C43A"/>
+    <circle cx="256" cy="244" r="187" fill="#FFFFFF"/>
+    <circle cx="256" cy="244" r="181" fill="#2B91C8" stroke="#157AAD" stroke-width="2"/>
+  </g>
+  <g fill="#FFFFFF" text-anchor="middle" font-family="Didot, 'Bodoni 72', 'Bodoni MT', 'Times New Roman', serif" font-size="59" font-weight="400">
+    <text x="116" y="255">R</text>
+    <text x="171" y="255">E</text>
+    <text x="228" y="255">M</text>
+    <text x="292" y="255">A</text>
+    <text x="349" y="255">R</text>
+    <text x="405" y="255">C</text>
+  </g>
+  <g fill="#FFFFFF" text-anchor="middle" font-family="Inter, Avenir, Montserrat, Arial, sans-serif" font-size="17" font-weight="600">
+    <text x="136" y="310">E</text>
+    <text x="156" y="310">N</text>
+    <text x="176" y="310">T</text>
+    <text x="196" y="310">E</text>
+    <text x="216" y="310">R</text>
+    <text x="236" y="310">T</text>
+    <text x="256" y="310">A</text>
+    <text x="276" y="310">I</text>
+    <text x="296" y="310">N</text>
+    <text x="316" y="310">M</text>
+    <text x="336" y="310">E</text>
+    <text x="356" y="310">N</text>
+    <text x="376" y="310">T</text>
+  </g>
+</svg>

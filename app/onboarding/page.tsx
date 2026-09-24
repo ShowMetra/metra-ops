@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { createOrganization } from "./actions";
+import { Brand } from "@/components/brand";
 
 export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
@@ -11,7 +12,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
   if (member) redirect("/dashboard");
 
   return <div className="publicShell authShell"><main className="card authCard">
-    <div className="brand"><span className="brandMark">R</span>Remarc Entertainment</div>
+    <Brand />
     <p className="eyebrow">One final step</p><h1>Create the company</h1><p className="lede">This becomes your private workspace. You can invite partners after setup.</p>
     <form action={createOrganization} className="formGrid authForm">
       <div className="field full"><label htmlFor="organization_name">Company name</label><input id="organization_name" name="name" defaultValue="Remarc Entertainment" required /></div>
