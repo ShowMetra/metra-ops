@@ -32,7 +32,7 @@ a { color: inherit; text-decoration: none; }
   position: sticky; top: 0; height: 100vh; padding: 28px 18px;
   border-right: 1px solid var(--line); background: #fcfbf8;
 }
-.brand { display: flex; gap: 11px; align-items: center; margin: 0 8px 34px; }
+.brandLogo { display: flex; gap: 11px; align-items: center; margin: 0 8px 34px; }
 .brandMark { width: 40px; height: 40px; flex: 0 0 40px; }
 .brandText { display: grid; color: inherit; line-height: 1; }
 .brandText > span { font-family: Didot, "Bodoni 72", "Bodoni MT", "Times New Roman", serif; font-size: 18px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
@@ -160,7 +160,7 @@ tr:last-child td { border-bottom: 0; }
 .field.full { grid-column: 1 / -1; }
 .authShell { display: grid; place-items: center; padding: 20px; }
 .authCard { width: 100%; max-width: 440px; padding: 30px; }
-.authCard .brand { margin-left: 0; }
+.authCard .brandLogo { margin-left: 0; }
 .authForm { margin-top: 26px; }
 .authFooter { margin: 20px 0 0; color: var(--muted); font-size: 12px; text-align: center; }
 .authFooter a { color: var(--brand); font-weight: 700; }
@@ -185,7 +185,7 @@ tr:last-child td { border-bottom: 0; }
 @media (max-width: 760px) {
   .shell { display: block; }
   .sidebar { position: static; height: auto; padding: 16px; border-right: 0; border-bottom: 1px solid var(--line); }
-  .brand { margin: 0 0 14px; }
+  .brandLogo { margin: 0 0 14px; }
   .navLabel, .sidebarFooter { display: none; }
   .nav { display: flex; overflow-x: auto; }
   .nav a { white-space: nowrap; }

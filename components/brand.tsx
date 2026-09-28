@@ -14,7 +14,7 @@ function BrandContent() {
 }
 
 export function Brand({ href, className = "" }: BrandProps) {
-  const classes = ["brand", className].filter(Boolean).join(" ");
+  const classes = ["brandLogo", className].filter(Boolean).join(" ");
   if (href) return <Link href={href} className={classes} aria-label="Remarc Entertainment home"><BrandContent /></Link>;
   return <div className={classes}><BrandContent /></div>;
 }
