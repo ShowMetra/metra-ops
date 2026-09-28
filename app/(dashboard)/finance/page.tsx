@@ -1,9 +1,12 @@
+import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireWorkspace } from "@/lib/workspace";
 
-type RevenueLine = { hotel_id: string; amount: number };
+type RevenueLine = { hotel_id: string; amount: number; rate_missing?: boolean };
 type MonthlyLine = {
   month: string;
+  performanceCount?: number;
+  unratedPerformances?: number;
   revenue: number;
   payroll: number;
   commissions: number;
@@ -12,6 +15,8 @@ type MonthlyLine = {
   profit: number;
 };
 type PeriodCalculation = {
+  performanceCount?: number;
+  unratedPerformances?: number;
   revenue: number;
   payroll: number;
   commissions: number;
@@ -33,7 +38,7 @@ const localMonth = (value: Date, timeZone: string) => {
   return `${part("year")}-${part("month")}`;
 };
 
-export default async function FinancePage({ searchParams }: { searchParams: Promise<{ from?: string | string[]; to?: string | string[] }> }) {
+export default async function FinancePage({ searchParams }: { searchParams: Promise<{ from?: string | string[]; to?: string | string[]; mode?: string | string[] }> }) {
   const [workspace, query] = await Promise.all([requireWorkspace(), searchParams]);
   const now = new Date();
   const currentMonth = localMonth(now, workspace.organization.timezone);
@@ -45,10 +50,12 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
     && monthsBetween(requestedFrom, requestedTo) < 24;
   const from = validRange ? requestedFrom : currentMonth;
   const to = validRange ? requestedTo : currentMonth;
+  const mode = query.mode === "forecast" ? "forecast" : "actual";
+  const isForecast = mode === "forecast";
 
   const supabase = await createSupabaseServerClient();
   const [{ data, error }, { data: hotels }] = await Promise.all([
-    supabase.rpc("calculate_finance_period_v1", {
+    supabase.rpc(isForecast ? "calculate_finance_forecast_period_v1" : "calculate_finance_period_v1", {
       p_organization_id: workspace.organization.id,
       p_start_month: `${from}-01`,
       p_end_month: `${to}-01`,
@@ -75,14 +82,17 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
     hotelTotals.set(line.hotel_id, current);
   }
   const isOwner = workspace.membership.role === "owner";
+  const scopeLabel = isOwner ? "Owner · All partners" : "Partner · Your shows";
 
   return <>
-    <div className="pageHeader"><div><p className="eyebrow">{isOwner ? "Company-wide finance" : "Your partner portfolio"} · {periodLabel}</p><h1>Finance</h1><p className="lede">{isOwner ? "Income and expenses across all partners." : "Income and expenses from only the shows assigned to you."} Only finished performances are included.</p></div><span className={`badge ${isOwner ? "brand" : "success"}`}>{isOwner ? "Owner · All partners" : "Partner · Your shows"}</span></div>
+    <div className="pageHeader"><div><p className="eyebrow">{isOwner ? "Company-wide finance" : "Your partner portfolio"} · {periodLabel}</p><h1>{isForecast ? "Financial forecast" : "Finance"}</h1><p className="lede">{isForecast ? "Estimated income and costs from the current performance schedule, rates, contracts and recorded expenses." : `${isOwner ? "Income and expenses across all partners." : "Income and expenses from only the shows assigned to you."} Only finished performances are included.`}</p></div><div className="financeHeaderActions"><span className={`badge ${isForecast ? "warning" : isOwner ? "brand" : "success"}`}>{isForecast ? "Estimate · Not final" : scopeLabel}</span><div className="segmented"><Link className={`button small ${!isForecast ? "primary" : ""}`} href={`/finance?from=${from}&to=${to}&mode=actual`}>Actual</Link><Link className={`button small ${isForecast ? "primary" : ""}`} href={`/finance?from=${from}&to=${to}&mode=forecast`}>Forecast</Link></div></div></div>
     {!validRange && <div className="notice danger">Choose a valid period of up to 24 months.</div>}
-    {error && <div className="notice danger">Could not calculate finance for this period.</div>}
+    {error && <div className="notice danger">Could not calculate {isForecast ? "the forecast" : "finance"} for this period.</div>}
+    {isForecast && Number(calculation?.unratedPerformances ?? 0) > 0 && <div className="notice warning"><strong>{calculation?.unratedPerformances} scheduled performances have no hotel rate.</strong> They currently add €0 to projected revenue. Add rates to make the forecast complete.</div>}
 
     <section className="card" style={{ marginBottom: 22 }}><div className="sectionHeader"><h2>Reporting period</h2><span className="badge brand">Up to 24 months</span></div><div className="sectionBody">
       <form method="get" className="formGrid">
+        <input type="hidden" name="mode" value={mode} />
         <div className="field"><label htmlFor="finance_from">From month</label><input id="finance_from" name="from" type="month" defaultValue={from} required /></div>
         <div className="field"><label htmlFor="finance_to">To month</label><input id="finance_to" name="to" type="month" defaultValue={to} required /></div>
         <div className="field full"><button className="button primary" type="submit">Show finance</button></div>
@@ -90,20 +100,20 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
     </div></section>
 
     <div className="grid4">
-      <div className="card metric"><div className="metricLabel">Revenue</div><div className="metricValue">{format(calculation?.revenue ?? 0)}</div><div className="metricMeta">Finished performances only</div></div>
-      <div className="card metric"><div className="metricLabel">Artist payroll</div><div className="metricValue">{format(calculation?.payroll ?? 0)}</div><div className="metricMeta">Base + extra days</div></div>
-      <div className="card metric"><div className="metricLabel">Commissions & expenses</div><div className="metricValue">{format(Number(calculation?.commissions ?? 0) + Number(calculation?.approvedExpenses ?? 0))}</div><div className="metricMeta">{format(calculation?.awaitingExpenseApproval ?? 0)} awaits approval</div></div>
-      <div className="card metric"><div className="metricLabel">Net profit</div><div className="metricValue">{format(calculation?.profit ?? 0)}</div><div className="metricMeta positive">{isOwner ? "All partner portfolios" : "Your assigned shows"}</div></div>
+      <div className="card metric"><div className="metricLabel">{isForecast ? "Projected revenue" : "Revenue"}</div><div className="metricValue">{format(calculation?.revenue ?? 0)}</div><div className="metricMeta">{isForecast ? `${calculation?.performanceCount ?? 0} scheduled performances` : "Finished performances only"}</div></div>
+      <div className="card metric"><div className="metricLabel">{isForecast ? "Projected payroll" : "Artist payroll"}</div><div className="metricValue">{format(calculation?.payroll ?? 0)}</div><div className="metricMeta">Base + extra days</div></div>
+      <div className="card metric"><div className="metricLabel">{isForecast ? "Projected commissions & expenses" : "Commissions & expenses"}</div><div className="metricValue">{format(Number(calculation?.commissions ?? 0) + Number(calculation?.approvedExpenses ?? 0))}</div><div className="metricMeta">{format(calculation?.awaitingExpenseApproval ?? 0)} awaits approval</div></div>
+      <div className="card metric"><div className="metricLabel">{isForecast ? "Projected profit" : "Net profit"}</div><div className="metricValue">{format(calculation?.profit ?? 0)}</div><div className="metricMeta positive">{isForecast ? "Based on the current plan" : isOwner ? "All partner portfolios" : "Your assigned shows"}</div></div>
     </div>
 
-    <section className="card section"><div className="sectionHeader"><h2>Monthly breakdown</h2></div><div className="sectionBody tableWrap"><table><thead><tr><th>Month</th><th className="num">Revenue</th><th className="num">Payroll</th><th className="num">Commissions & expenses</th><th className="num">Net profit</th></tr></thead><tbody>
-      {(calculation?.monthlyLines ?? []).map(line => <tr key={line.month}><td className="strong">{monthLabel(line.month)}</td><td className="num">{format(line.revenue)}</td><td className="num">{format(line.payroll)}</td><td className="num">{format(Number(line.commissions) + Number(line.approvedExpenses))}</td><td className="num strong">{format(line.profit)}</td></tr>)}
-      {!calculation?.monthlyLines?.length && <tr><td colSpan={5}><div className="emptyState">No financial activity in this period.</div></td></tr>}
+    <section className="card section"><div className="sectionHeader"><h2>{isForecast ? "Forecast by month" : "Monthly breakdown"}</h2></div><div className="sectionBody tableWrap"><table><thead><tr><th>Month</th>{isForecast && <th className="num">Performances</th>}<th className="num">Revenue</th><th className="num">Payroll</th><th className="num">Commissions & expenses</th><th className="num">Net profit</th></tr></thead><tbody>
+      {(calculation?.monthlyLines ?? []).map(line => <tr key={line.month}><td className="strong">{monthLabel(line.month)}</td>{isForecast && <td className="num">{line.performanceCount ?? 0}</td>}<td className="num">{format(line.revenue)}</td><td className="num">{format(line.payroll)}</td><td className="num">{format(Number(line.commissions) + Number(line.approvedExpenses))}</td><td className="num strong">{format(line.profit)}</td></tr>)}
+      {!calculation?.monthlyLines?.length && <tr><td colSpan={isForecast ? 6 : 5}><div className="emptyState">No financial activity in this period.</div></td></tr>}
     </tbody></table></div></section>
 
-    <section className="card section"><div className="sectionHeader"><h2>Hotel billing</h2></div><div className="sectionBody tableWrap"><table><thead><tr><th>Hotel</th><th className="num">Finished performances</th><th className="num">Invoice amount</th></tr></thead><tbody>
+    <section className="card section"><div className="sectionHeader"><h2>{isForecast ? "Projected hotel billing" : "Hotel billing"}</h2></div><div className="sectionBody tableWrap"><table><thead><tr><th>Hotel</th><th className="num">{isForecast ? "Scheduled performances" : "Finished performances"}</th><th className="num">{isForecast ? "Projected amount" : "Invoice amount"}</th></tr></thead><tbody>
       {Array.from(hotelTotals.entries()).map(([hotelId, total]) => <tr key={hotelId}><td className="strong">{hotels?.find(hotel => hotel.id === hotelId)?.name ?? "Hotel"}</td><td className="num">{total.count}</td><td className="num strong">{format(total.total)}</td></tr>)}
-      {!hotelTotals.size && <tr><td colSpan={3}><div className="emptyState">No finished, rated performances in this period.</div></td></tr>}
+      {!hotelTotals.size && <tr><td colSpan={3}><div className="emptyState">No {isForecast ? "scheduled" : "finished, rated"} performances in this period.</div></td></tr>}
     </tbody></table></div></section>
   </>;
 }
