@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { signOut } from "@/app/login/actions";
+import { AppNavigation } from "@/components/app-navigation";
 import { Brand } from "@/components/brand";
 
-const navigation = [
+const navigation: Array<[string, string]> = [
   ["Overview", "/dashboard"],
   ["Calendar", "/calendar"],
   ["Hotels & rates", "/hotels"],
@@ -18,12 +18,13 @@ export function AppShell({ children, name, organization, role }: {
   organization: string;
   role: "owner" | "partner";
 }) {
-  const links = role === "owner" ? [...navigation, ["Team", "/team"]] : navigation;
+  const links: Array<[string, string]> =
+    role === "owner" ? [...navigation, ["Team", "/team"]] : navigation;
   return <div className="shell">
     <aside className="sidebar">
       <Brand href="/dashboard" />
       <div className="navLabel">{organization}</div>
-      <nav className="nav">{links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</nav>
+      <AppNavigation links={links} />
       <div className="sidebarFooter"><div className="profileName">{name}</div><div className="profileRole">{role === "owner" ? "Owner · Hotels & finance" : "Partner · Operations"}</div></div>
     </aside>
     <main className="main">
