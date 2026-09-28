@@ -9,7 +9,7 @@ const hotelsError = (message: string) => `/hotels?error=${encodeURIComponent(mes
 
 export async function createHotel(formData: FormData) {
   const workspace = await requireWorkspace();
-  if (workspace.membership.role !== "owner") redirect(hotelsError("Only the owner can create hotels."));
+  if (workspace.membership.role !== "partner") redirect(hotelsError("Only partners can create hotels."));
 
   const name = String(formData.get("name") ?? "").trim();
   const address = String(formData.get("address") ?? "").trim();

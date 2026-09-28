@@ -16,10 +16,10 @@ export default async function HotelsPage({ searchParams }: { searchParams: Promi
   const today = new Date().toISOString().slice(0, 10);
 
   return <>
-    <div className="pageHeader"><div><p className="eyebrow">Organization directory</p><h1>Hotels & rates</h1><p className="lede">The owner maintains one hotel list. Partners reuse it for performances and rates.</p></div></div>
+    <div className="pageHeader"><div><p className="eyebrow">Organization directory</p><h1>Hotels & rates</h1><p className="lede">Partners maintain one shared hotel list and set rates for their shows. The owner can review everything.</p></div></div>
     {error && <div className="notice danger">{error}</div>}{message && <div className="notice success">{message}</div>}
     <div className="grid2">
-      {workspace.membership.role === "owner" && <section className="card"><div className="sectionHeader"><h2>Add hotel</h2><span className="badge brand">Owner only</span></div><div className="sectionBody">
+      {workspace.membership.role === "partner" && <section className="card"><div className="sectionHeader"><h2>Add hotel</h2><span className="badge brand">Partner</span></div><div className="sectionBody">
         <form action={createHotel} className="formGrid">
           <div className="field full"><label htmlFor="hotel_name">Hotel name</label><input id="hotel_name" name="name" required /></div>
           <div className="field full"><label htmlFor="hotel_address">Address</label><input id="hotel_address" name="address" /></div>

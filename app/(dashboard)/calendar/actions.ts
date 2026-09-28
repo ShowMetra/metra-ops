@@ -17,7 +17,7 @@ function performanceInput(formData: FormData) {
   const notes = String(formData.get("notes") ?? "").trim();
   const recurrence = String(formData.get("recurrence") ?? "none");
   const repeatUntil = String(formData.get("repeat_until") ?? "");
-  const validRecurrence = ["none", "daily", "weekly", "monthly"].includes(recurrence);
+  const validRecurrence = ["none", "daily", "weekly", "biweekly", "monthly"].includes(recurrence);
   const validRepeatUntil = recurrence === "none"
     || (/^\d{4}-\d{2}-\d{2}$/.test(repeatUntil) && repeatUntil >= date);
   const valid = Boolean(showId && hotelId && /^\d{4}-\d{2}-\d{2}$/.test(date) && /^\d{2}:\d{2}$/.test(time) && Number.isInteger(durationMinutes) && durationMinutes >= 15 && durationMinutes <= 480 && validRecurrence && validRepeatUntil);

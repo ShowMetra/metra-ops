@@ -101,7 +101,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
 
     <div className="grid4">
       <div className="card metric"><div className="metricLabel">{isForecast ? "Projected revenue" : "Revenue"}</div><div className="metricValue">{format(calculation?.revenue ?? 0)}</div><div className="metricMeta">{isForecast ? `${calculation?.performanceCount ?? 0} scheduled performances` : "Finished performances only"}</div></div>
-      <div className="card metric"><div className="metricLabel">{isForecast ? "Projected payroll" : "Artist payroll"}</div><div className="metricValue">{format(calculation?.payroll ?? 0)}</div><div className="metricMeta">Base + extra days</div></div>
+      <div className="card metric"><div className="metricLabel">{isForecast ? "Projected payroll" : "Artist payroll"}</div><div className="metricValue">{format(calculation?.payroll ?? 0)}</div><div className="metricMeta">Active monthly or daily contracts</div></div>
       <div className="card metric"><div className="metricLabel">{isForecast ? "Projected commissions & expenses" : "Commissions & expenses"}</div><div className="metricValue">{format(Number(calculation?.commissions ?? 0) + Number(calculation?.approvedExpenses ?? 0))}</div><div className="metricMeta">{format(calculation?.awaitingExpenseApproval ?? 0)} awaits approval</div></div>
       <div className="card metric"><div className="metricLabel">{isForecast ? "Projected profit" : "Net profit"}</div><div className="metricValue">{format(calculation?.profit ?? 0)}</div><div className="metricMeta positive">{isForecast ? "Based on the current plan" : isOwner ? "All partner portfolios" : "Your assigned shows"}</div></div>
     </div>

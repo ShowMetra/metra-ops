@@ -20,6 +20,8 @@ begin
     'partner forecasts must stay limited to assigned shows';
   assert v_helper_definition like '%rate_missing%',
     'forecast must report performances without a matching hotel rate';
+  assert v_helper_definition like '%when ''daily'' then contract_work.worked_days * contract_work.daily_rate%',
+    'finance must calculate daily contracts from worked performance days';
   assert not has_function_privilege(
     'authenticated',
     'private.calculate_month_mode_v1(uuid,date,boolean)',

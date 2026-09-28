@@ -85,11 +85,11 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         <div className="field"><label htmlFor="performance_date">First date</label><input id="performance_date" name="date" type="date" defaultValue={defaultDate} required /></div>
         <div className="field"><label htmlFor="performance_time">Start time</label><input id="performance_time" name="time" type="time" defaultValue="20:00" required /></div>
         <div className="field"><label htmlFor="performance_duration">Duration (minutes)</label><input id="performance_duration" name="duration_minutes" type="number" min="15" max="480" step="5" defaultValue="60" required /></div>
-        <div className="field"><label htmlFor="performance_recurrence">Repeat</label><select id="performance_recurrence" name="recurrence" defaultValue="none"><option value="none">Does not repeat</option><option value="daily">Every day</option><option value="weekly">Every week</option><option value="monthly">Every month</option></select></div>
+        <div className="field"><label htmlFor="performance_recurrence">Repeat</label><select id="performance_recurrence" name="recurrence" defaultValue="none"><option value="none">Does not repeat</option><option value="daily">Every day</option><option value="weekly">Every week</option><option value="biweekly">Every 2 weeks</option><option value="monthly">Every month</option></select></div>
         <div className="field"><label htmlFor="performance_repeat_until">Repeat until</label><input id="performance_repeat_until" name="repeat_until" type="date" defaultValue={defaultRepeatUntil} max={maxRepeatUntil} /><span className="helpText">Used only for recurring series, up to one year.</span></div>
         <div className="field full"><label htmlFor="performance_notes">Operational notes</label><textarea id="performance_notes" name="notes" rows={3} /></div>
         <div className="field full"><SubmitButton className="button primary" type="submit" pendingLabel="Creating…">Create performance</SubmitButton></div>
-      </form> : <div className="emptyState">Create a show and ask the owner to add a hotel first.</div>}
+      </form> : <div className="emptyState">Create a show and add a hotel first.</div>}
     </div></details>}
 
     <section className="card calendarCard">

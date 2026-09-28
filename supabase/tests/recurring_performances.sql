@@ -18,6 +18,8 @@ begin
     'partners may only create recurring performances for assigned shows';
   assert lower(v_definition) like '%recurring series cannot exceed one year%',
     'recurring series must be bounded';
+  assert lower(v_definition) like '%when ''biweekly'' then p_local_start + make_interval(weeks => v_index * 2)%',
+    'recurring performance creation must support every two weeks';
   assert not has_function_privilege(
     'anon',
     'public.create_recurring_performances_v1(uuid,uuid,uuid,timestamp without time zone,integer,text,date,text)',
