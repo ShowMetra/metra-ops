@@ -99,13 +99,36 @@ tr:last-child td { border-bottom: 0; }
 .listItem { padding: 14px 0; display: flex; justify-content: space-between; gap: 18px; border-bottom: 1px solid #f0efeb; }
 .listItem:last-child { border-bottom: 0; }
 
-.calendar { display: grid; grid-template-columns: 76px repeat(7,minmax(120px,1fr)); min-width: 980px; }
-.calendar > div { min-height: 92px; padding: 10px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.calendar .head { min-height: auto; color: var(--muted); font-size: 11px; font-weight: 700; text-align: center; }
-.calendar .time { color: var(--muted); font-size: 11px; }
-.event { padding: 9px; border-left: 3px solid var(--brand); border-radius: 8px; background: var(--brand-soft); color: #42369c; font-size: 11px; line-height: 1.35; }
-.event.green { border-left-color: #37966c; background: var(--positive-soft); color: #24664a; }
-.event.orange { border-left-color: #d28b2f; background: var(--warning-soft); color: #825212; }
+.calendarPageHeader { margin-bottom: 20px; }
+.calendarCreate { margin-bottom: 18px; overflow: hidden; }
+.calendarCreate > summary { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px 20px; cursor: pointer; list-style: none; }
+.calendarCreate > summary::-webkit-details-marker { display: none; }
+.calendarCreate > summary span:first-child { display: grid; gap: 3px; }
+.calendarCreate > summary small { color: var(--muted); font-weight: 500; }
+.calendarCreate[open] > summary { border-bottom: 1px solid var(--line); }
+.calendarCreate .sectionBody { padding-top: 20px; }
+.calendarCard { overflow: hidden; }
+.calendarToolbar { min-height: 68px; padding: 14px 18px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; border-bottom: 1px solid var(--line); }
+.calendarToolbar > .badge { justify-self: end; }
+.calendarNav { display: flex; gap: 7px; }
+.calendarNav .button:first-child, .calendarNav .button:last-child { width: 36px; padding: 0; font-size: 22px; }
+.calendarScroll { overflow-x: auto; }
+.monthCalendar { display: grid; grid-template-columns: repeat(7,minmax(132px,1fr)); min-width: 924px; background: var(--line); gap: 1px; }
+.monthCalendarWeekday { padding: 10px; background: #faf9f6; color: var(--muted); font-size: 10px; font-weight: 750; letter-spacing: .08em; text-align: center; text-transform: uppercase; }
+.monthCalendarDay { min-height: 142px; padding: 8px; background: white; }
+.monthCalendarDay.outside { background: #faf9f6; }
+.monthCalendarDay.outside .monthCalendarDate, .monthCalendarDay.outside .calendarEvent { opacity: .48; }
+.monthCalendarDate { height: 28px; display: flex; justify-content: flex-end; color: var(--muted); font-size: 12px; }
+.monthCalendarDay.today .monthCalendarDate span { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: var(--brand); color: white; font-weight: 750; }
+.monthCalendarEvents { display: grid; gap: 4px; }
+.calendarEvent { min-width: 0; padding: 5px 7px; border-left: 3px solid var(--brand); border-radius: 5px; background: var(--brand-soft); color: #42369c; font-size: 10px; line-height: 1.25; }
+.calendarEvent.finished { border-left-color: #37966c; background: var(--positive-soft); color: #24664a; }
+.calendarEvent > span { margin-right: 5px; font-variant-numeric: tabular-nums; }
+.calendarEvent > strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.calendarEvent > small { display: block; margin-top: 2px; overflow: hidden; opacity: .8; text-overflow: ellipsis; white-space: nowrap; }
+.calendarMore { padding: 2px 7px; color: var(--muted); font-size: 10px; font-weight: 700; }
+.calendarRowActions { min-width: 140px; margin-top: 0; align-items: center; }
+.calendarRowActions .showEditor { margin-top: 0; padding-top: 0; border-top: 0; }
 
 .showGrid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
 .showCard { padding: 20px; }
@@ -169,4 +192,7 @@ tr:last-child td { border-bottom: 0; }
   .field.full { grid-column: auto; }
   .scheduleItem { grid-template-columns: 54px 1fr; }
   .scheduleItem > :last-child { grid-column: 2; }
+  .calendarToolbar { grid-template-columns: 1fr auto; }
+  .calendarToolbar h2 { grid-row: 1; grid-column: 1 / -1; }
+  .calendarToolbar > .badge { justify-self: end; }
 }

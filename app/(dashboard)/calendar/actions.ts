@@ -15,8 +15,13 @@ function performanceInput(formData: FormData) {
   const time = String(formData.get("time") ?? "");
   const durationMinutes = Number(formData.get("duration_minutes"));
   const notes = String(formData.get("notes") ?? "").trim();
-  const valid = Boolean(showId && hotelId && /^\d{4}-\d{2}-\d{2}$/.test(date) && /^\d{2}:\d{2}$/.test(time) && Number.isInteger(durationMinutes) && durationMinutes >= 15 && durationMinutes <= 480);
-  return { performanceId, showId, hotelId, date, time, durationMinutes, notes, valid };
+  const recurrence = String(formData.get("recurrence") ?? "none");
+  const repeatUntil = String(formData.get("repeat_until") ?? "");
+  const validRecurrence = ["none", "daily", "weekly", "monthly"].includes(recurrence);
+  const validRepeatUntil = recurrence === "none"
+    || (/^\d{4}-\d{2}-\d{2}$/.test(repeatUntil) && repeatUntil >= date);
+  const valid = Boolean(showId && hotelId && /^\d{4}-\d{2}-\d{2}$/.test(date) && /^\d{2}:\d{2}$/.test(time) && Number.isInteger(durationMinutes) && durationMinutes >= 15 && durationMinutes <= 480 && validRecurrence && validRepeatUntil);
+  return { performanceId, showId, hotelId, date, time, durationMinutes, notes, recurrence, repeatUntil, valid };
 }
 
 const refreshCalendar = () => {
@@ -33,19 +38,29 @@ export async function createPerformance(formData: FormData) {
   if (!input.valid) redirect(calendarError("Complete the required performance fields."));
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("create_performance_v1", {
+  const commonParameters = {
     p_organization_id: workspace.organization.id,
     p_show_id: input.showId,
     p_hotel_id: input.hotelId,
     p_local_start: `${input.date} ${input.time}:00`,
     p_duration_minutes: input.durationMinutes,
     p_notes: input.notes || null,
-  });
+  };
+  const result = input.recurrence === "none"
+    ? await supabase.rpc("create_performance_v1", commonParameters)
+    : await supabase.rpc("create_recurring_performances_v1", {
+      ...commonParameters,
+      p_frequency: input.recurrence,
+      p_repeat_until: input.repeatUntil,
+    });
+  const { error } = result;
   if (error?.message.includes("future")) redirect(calendarError("A new performance must be in the future."));
+  if (error?.message.includes("one year")) redirect(calendarError("A recurring series can cover up to one year."));
   if (error) redirect(calendarError("Could not create the performance."));
 
   refreshCalendar();
-  redirect("/calendar?message=Performance+created");
+  const count = input.recurrence === "none" ? 1 : Number(result.data ?? 0);
+  redirect(`/calendar?message=${encodeURIComponent(count === 1 ? "Performance created" : `${count} recurring performances created`)}`);
 }
 
 export async function updatePerformance(formData: FormData) {
