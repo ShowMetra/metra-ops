@@ -1,20 +1,9 @@
 import { Fragment } from "react";
+import { ContractFields } from "@/components/contract-fields";
 import { SubmitButton } from "@/components/submit-button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireWorkspace } from "@/lib/workspace";
 import { createArtist, createArtistContract } from "./actions";
-
-function ContractFields({ idPrefix, currency, defaultFrom }: { idPrefix: string; currency: string; defaultFrom: string }) {
-  return <>
-    <div className="field"><label htmlFor={`${idPrefix}_type`}>Payment type</label><select id={`${idPrefix}_type`} name="payment_type" defaultValue="monthly"><option value="monthly">Monthly salary</option><option value="daily">Daily rate</option></select></div>
-    <div className="field"><label htmlFor={`${idPrefix}_salary`}>Monthly salary ({currency})</label><input id={`${idPrefix}_salary`} name="monthly_salary" type="number" min="0" step="0.01" defaultValue="0" /></div>
-    <div className="field"><label htmlFor={`${idPrefix}_extra`}>Extra day rate ({currency})</label><input id={`${idPrefix}_extra`} name="extra_day_rate" type="number" min="0" step="0.01" defaultValue="0" /></div>
-    <div className="field"><label htmlFor={`${idPrefix}_daily`}>Daily rate ({currency})</label><input id={`${idPrefix}_daily`} name="daily_rate" type="number" min="0" step="0.01" defaultValue="0" /></div>
-    <div className="field"><label htmlFor={`${idPrefix}_from`}>Valid from</label><input id={`${idPrefix}_from`} name="valid_from" type="date" defaultValue={defaultFrom} required /></div>
-    <div className="field"><label htmlFor={`${idPrefix}_to`}>Valid until</label><input id={`${idPrefix}_to`} name="valid_to" type="date" /><span className="helpText">Optional. A new later contract automatically closes the previous open contract.</span></div>
-    <div className="field full"><span className="helpText">For a monthly contract, fill monthly salary and optional extra day rate. For a daily contract, fill only the daily rate.</span></div>
-  </>;
-}
 
 export default async function ArtistsPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
   const [{ error, message }, workspace] = await Promise.all([searchParams, requireWorkspace()]);
