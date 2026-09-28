@@ -19,7 +19,7 @@ export function AppShell({ children, name, organization, role }: {
   role: "owner" | "partner";
 }) {
   const links: Array<[string, string]> =
-    role === "owner" ? [...navigation, ["Team", "/team"]] : navigation;
+    role === "owner" ? [...navigation, ["Invoices", "/invoices"], ["Team", "/team"]] : navigation;
   return <div className="shell">
     <aside className="sidebar">
       <Brand href="/dashboard" />

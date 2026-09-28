@@ -179,6 +179,39 @@ tr:last-child td { border-bottom: 0; }
 .copyRow input { min-width: 0; flex: 1; }
 .helpText { color: var(--muted); font-size: 11px; line-height: 1.5; }
 
+.invoiceSettings { margin-bottom: 22px; }
+.invoiceMonthPicker { display: flex; align-items: end; gap: 10px; max-width: 420px; }
+.invoiceMonthPicker .field { flex: 1; }
+.invoiceCandidates { margin-top: 22px; }
+.invoiceLink { color: var(--brand); font-weight: 750; }
+.invoiceStatus { text-transform: capitalize; }
+.invoiceStatus.sent { background: var(--brand-soft); color: var(--brand); }
+.invoiceStatus.paid { background: var(--positive-soft); color: var(--positive); }
+.invoiceStatus.void { background: var(--danger-soft); color: var(--danger); }
+.invoiceActions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.invoiceDocument { max-width: 940px; margin: 0 auto; padding: 48px; border: 1px solid var(--line); border-radius: 16px; background: white; box-shadow: var(--shadow); }
+.invoiceDocumentHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 28px; padding-bottom: 30px; border-bottom: 2px solid var(--ink); }
+.invoiceBrand { margin: 0; }
+.invoiceTitle { display: grid; justify-items: end; gap: 6px; }
+.invoiceTitle h1 { font-size: 38px; text-transform: uppercase; }
+.invoiceTitle > strong { color: var(--muted); font-size: 13px; }
+.invoiceMeta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; padding: 24px 0; border-bottom: 1px solid var(--line); }
+.invoiceMeta div { display: grid; gap: 5px; }
+.invoiceMeta span, .invoiceLabel { color: var(--muted); font-size: 10px; font-weight: 750; letter-spacing: .09em; text-transform: uppercase; }
+.invoiceParties { display: grid; grid-template-columns: repeat(2, 1fr); gap: 60px; padding: 30px 0 36px; }
+.invoiceParties h2 { margin-top: 8px; }
+.invoiceParties p { margin: 7px 0 0; color: var(--muted); line-height: 1.55; white-space: pre-line; }
+.invoiceItems th:first-child { width: 120px; }
+.invoiceItems td { vertical-align: top; }
+.invoiceBottom { display: grid; grid-template-columns: 1fr 320px; gap: 56px; margin-top: 34px; }
+.invoicePayment p { margin: 9px 0 0; color: var(--muted); overflow-wrap: anywhere; }
+.invoicePayment .invoiceNotes { margin-top: 22px; line-height: 1.55; white-space: pre-line; }
+.invoiceTotals { display: grid; gap: 12px; }
+.invoiceTotals > div { display: flex; justify-content: space-between; gap: 24px; }
+.invoiceGrandTotal { margin-top: 4px; padding-top: 16px; border-top: 2px solid var(--ink); font-size: 18px; }
+.invoiceFooter { margin-top: 52px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; text-align: center; }
+.invoiceStatusActions { max-width: 940px; margin: 20px auto 0; padding: 20px 22px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+
 @media (max-width: 1050px) {
   .grid4 { grid-template-columns: repeat(2,1fr); }
   .showGrid { grid-template-columns: repeat(2,1fr); }
@@ -201,4 +234,30 @@ tr:last-child td { border-bottom: 0; }
   .calendarToolbar { grid-template-columns: 1fr auto; }
   .calendarToolbar h2 { grid-row: 1; grid-column: 1 / -1; }
   .calendarToolbar > .badge { justify-self: end; }
+  .invoiceMonthPicker, .invoiceActions, .invoiceStatusActions { align-items: stretch; flex-direction: column; }
+  .invoiceActions .buttonRow, .invoiceStatusActions .buttonRow { flex-wrap: wrap; }
+  .invoiceDocument { padding: 24px 18px; }
+  .invoiceDocumentHeader, .invoiceParties, .invoiceBottom { grid-template-columns: 1fr; gap: 24px; }
+  .invoiceDocumentHeader { display: flex; }
+  .invoiceParties { display: grid; }
+  .invoiceBottom { display: grid; }
+  .invoiceMeta { grid-template-columns: 1fr; }
+  .invoiceTitle h1 { font-size: 30px; }
+}
+
+@media print {
+  @page { size: A4; margin: 14mm; }
+  html, body { background: white; }
+  body { font-size: 11px; }
+  .shell { display: block; min-height: auto; }
+  .sidebar, .topbar, .invoiceScreenOnly, .invoiceActions, .invoiceStatusActions { display: none !important; }
+  .content { max-width: none; padding: 0; }
+  .invoiceDocument { max-width: none; margin: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
+  .invoiceDocumentHeader { padding-bottom: 20px; }
+  .invoiceBrand { color: black; }
+  .invoiceMeta { padding: 18px 0; }
+  .invoiceParties { padding: 22px 0 28px; }
+  .invoiceItems th, .invoiceItems td { padding: 8px; }
+  .invoiceBottom { margin-top: 26px; }
+  .invoiceFooter { margin-top: 34px; }
 }
