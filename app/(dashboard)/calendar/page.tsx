@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { CalendarMonthNavigation } from "@/components/calendar-month-navigation";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { SubmitButton } from "@/components/submit-button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -93,7 +93,13 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
     </div></details>}
 
     <section className="card calendarCard">
-      <div className="calendarToolbar"><div className="calendarNav"><Link className="button small" href={`/calendar?month=${previousMonth}`} aria-label="Previous month">‹</Link><Link className="button small" href={`/calendar?month=${currentMonth}`}>Today</Link><Link className="button small" href={`/calendar?month=${nextMonth}`} aria-label="Next month">›</Link></div><h2>{monthLabel}</h2><span className="badge">{monthPerformances.length} performances</span></div>
+      <CalendarMonthNavigation
+        previousHref={`/calendar?month=${previousMonth}`}
+        todayHref={`/calendar?month=${currentMonth}`}
+        nextHref={`/calendar?month=${nextMonth}`}
+        monthLabel={monthLabel}
+        performanceCount={monthPerformances.length}
+      />
       <div className="calendarScroll"><div className="monthCalendar">
         {gridDays.slice(0, 7).map(day => <div className="monthCalendarWeekday" key={`weekday-${dateInput(day)}`}>{day.toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" })}</div>)}
         {gridDays.map(day => {
