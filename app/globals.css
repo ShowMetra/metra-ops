@@ -41,8 +41,10 @@ a { color: inherit; text-decoration: none; }
 .publicBrand { margin-left: 0; }
 .navLabel { padding: 0 10px; margin: 24px 0 8px; color: #a09f9a; font-size: 10px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
 .nav { display: grid; gap: 4px; }
-.nav a { padding: 11px 12px; border-radius: 10px; color: #5d5d66; }
+.nav a { padding: 11px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-radius: 10px; color: #5d5d66; }
 .nav a:hover, .nav a.active { color: var(--brand); background: var(--brand-soft); font-weight: 650; }
+.navPending { width: 14px; height: 14px; flex: 0 0 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; opacity: 0; }
+.navPending.visible { animation: navSpin .65s linear infinite; opacity: .75; }
 .sidebarFooter { position: absolute; left: 18px; right: 18px; bottom: 24px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: white; }
 .profileName { font-weight: 700; }
 .profileRole { margin-top: 3px; color: var(--muted); font-size: 12px; }
@@ -52,6 +54,28 @@ a { color: inherit; text-decoration: none; }
 .topbarTitle { font-size: 13px; color: var(--muted); }
 .topbarActions { display: flex; align-items: center; gap: 10px; }
 .content { padding: 32px 34px 64px; max-width: 1480px; margin: 0 auto; }
+.pageLoading { position: relative; }
+.routeLoadingBar { position: fixed; z-index: 20; top: 71px; left: 232px; right: 0; height: 2px; overflow: hidden; background: var(--brand-soft); }
+.routeLoadingBar::after { position: absolute; inset: 0; width: 35%; background: var(--brand); content: ""; animation: routeLoading 1s ease-in-out infinite; }
+.loadingHeader { display: grid; gap: 10px; margin-bottom: 28px; }
+.loadingMetrics { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; }
+.loadingMetric { padding: 20px; }
+.loadingPanel { display: grid; gap: 18px; margin-top: 22px; padding: 22px; }
+.skeleton { border-radius: 7px; background: linear-gradient(90deg, #ecebe7 25%, #f7f6f2 50%, #ecebe7 75%); background-size: 200% 100%; animation: skeletonShimmer 1.25s ease-in-out infinite; }
+.skeletonEyebrow { width: 150px; height: 11px; }
+.skeletonTitle { width: min(280px, 60%); height: 36px; }
+.skeletonText { width: min(560px, 85%); height: 14px; }
+.skeletonLabel { width: 55%; height: 11px; }
+.skeletonValue { width: 70%; height: 30px; margin-top: 15px; }
+.skeletonMeta { width: 80%; height: 11px; margin-top: 12px; }
+.skeletonPanelTitle { width: 180px; height: 20px; }
+.skeletonRow { width: 100%; height: 48px; }
+.skeletonRow.short { width: 82%; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+@keyframes navSpin { to { transform: rotate(360deg); } }
+@keyframes routeLoading { from { transform: translateX(-110%); } to { transform: translateX(300%); } }
+@keyframes skeletonShimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 .pageHeader { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
 .eyebrow { margin: 0 0 7px; color: var(--brand); font-weight: 750; font-size: 11px; letter-spacing: .11em; text-transform: uppercase; }
 h1 { margin: 0; font-size: 30px; letter-spacing: -.035em; }
@@ -221,6 +245,7 @@ tr:last-child td { border-bottom: 0; }
 
 @media (max-width: 1050px) {
   .grid4 { grid-template-columns: repeat(2,1fr); }
+  .loadingMetrics { grid-template-columns: repeat(2,1fr); }
   .showGrid { grid-template-columns: repeat(2,1fr); }
 }
 @media (max-width: 760px) {
@@ -231,10 +256,12 @@ tr:last-child td { border-bottom: 0; }
   .nav { display: flex; overflow-x: auto; }
   .nav a { white-space: nowrap; }
   .topbar { display: none; }
+  .routeLoadingBar { top: 0; left: 0; }
   .content { padding: 24px 16px 48px; }
   .pageHeader { align-items: flex-start; flex-direction: column; }
   .financeHeaderActions { justify-items: start; }
   .grid4, .grid2, .showGrid, .formGrid { grid-template-columns: 1fr; }
+  .loadingMetrics { grid-template-columns: 1fr; }
   .field.full { grid-column: auto; }
   .scheduleItem { grid-template-columns: 54px 1fr; }
   .scheduleItem > :last-child { grid-column: 2; }
