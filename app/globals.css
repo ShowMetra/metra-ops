@@ -148,11 +148,21 @@ tr:last-child td { border-bottom: 0; }
 .calendarCard { position: relative; overflow: hidden; }
 .calendarToolbar { min-height: 68px; padding: 14px 18px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; border-bottom: 1px solid var(--line); }
 .calendarToolbar.pending { color: var(--muted); }
-.calendarToolbar > .badge { justify-self: end; }
+.calendarToolbarRight { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
 .calendarNav { display: flex; gap: 7px; }
 .calendarNav .button:first-child, .calendarNav .button:last-child { width: 36px; padding: 0; font-size: 22px; }
 .calendarMonthLoading { position: absolute; z-index: 5; inset: 68px 0 0; min-height: 260px; display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(255,255,255,.78); color: var(--brand); backdrop-filter: blur(2px); }
 .calendarLoadingSpinner { width: 20px; height: 20px; border: 3px solid var(--brand-soft); border-right-color: var(--brand); border-radius: 50%; animation: navSpin .65s linear infinite; }
+.calendarFilters { padding: 14px 18px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; border-bottom: 1px solid var(--line); background: #faf9f6; }
+.calendarFiltersIntro { display: grid; gap: 3px; }
+.calendarFiltersIntro small { color: var(--muted); font-size: 11px; }
+.calendarShowFilters { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.calendarShowFilter { --show-color: var(--brand); display: inline-flex; align-items: center; gap: 7px; min-height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: 99px; background: white; color: var(--muted); cursor: pointer; font-size: 12px; font-weight: 650; }
+.calendarShowFilter input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; }
+.calendarShowFilter.selected { border-color: color-mix(in srgb, var(--show-color) 60%, white); background: color-mix(in srgb, var(--show-color) 10%, white); color: var(--ink); }
+.calendarShowFilter.disabled { cursor: not-allowed; opacity: .45; }
+.showColorDot { width: 9px; height: 9px; flex: 0 0 9px; border-radius: 50%; background: var(--show-color); box-shadow: 0 0 0 2px color-mix(in srgb, var(--show-color) 18%, white); }
+.showNameWithColor { display: inline-flex; align-items: center; gap: 8px; font-weight: 650; }
 .calendarScroll { overflow-x: auto; }
 .monthCalendar { display: grid; grid-template-columns: repeat(7,minmax(132px,1fr)); min-width: 924px; background: var(--line); gap: 1px; }
 .monthCalendarWeekday { padding: 10px; background: #faf9f6; color: var(--muted); font-size: 10px; font-weight: 750; letter-spacing: .08em; text-align: center; text-transform: uppercase; }
@@ -162,12 +172,14 @@ tr:last-child td { border-bottom: 0; }
 .monthCalendarDate { height: 28px; display: flex; justify-content: flex-end; color: var(--muted); font-size: 12px; }
 .monthCalendarDay.today .monthCalendarDate span { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: var(--brand); color: white; font-weight: 750; }
 .monthCalendarEvents { display: grid; gap: 4px; }
-.calendarEvent { min-width: 0; padding: 5px 7px; border-left: 3px solid var(--brand); border-radius: 5px; background: var(--brand-soft); color: var(--brand-ink); font-size: 10px; line-height: 1.25; }
-.calendarEvent.finished { border-left-color: #37966c; background: var(--positive-soft); color: #24664a; }
-.calendarEvent > span { margin-right: 5px; font-variant-numeric: tabular-nums; }
-.calendarEvent > strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.calendarEvent > small { display: block; margin-top: 2px; overflow: hidden; opacity: .8; text-overflow: ellipsis; white-space: nowrap; }
+.calendarEvent { --show-color: var(--brand); min-width: 0; padding: 6px 7px; border-left: 3px solid var(--show-color); border-radius: 5px; background: color-mix(in srgb, var(--show-color) 12%, white); color: var(--ink); font-size: 10px; line-height: 1.25; }
+.calendarEvent.finished { opacity: .68; }
+.calendarEventTitle { display: flex; min-width: 0; align-items: baseline; gap: 5px; }
+.calendarEventTitle > span { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+.calendarEventTitle > strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.calendarEvent > small { display: block; margin-top: 3px; overflow: hidden; color: color-mix(in srgb, var(--show-color) 50%, #4f505b); text-overflow: ellipsis; white-space: nowrap; }
 .calendarMore { padding: 2px 7px; color: var(--muted); font-size: 10px; font-weight: 700; }
+.calendarList { min-height: 300px; padding: 8px 18px 18px; }
 .calendarRowActions { min-width: 140px; margin-top: 0; align-items: center; }
 .calendarRowActions .showEditor { margin-top: 0; padding-top: 0; border-top: 0; }
 
@@ -222,6 +234,7 @@ tr:last-child td { border-bottom: 0; }
 .financeHeaderActions { display: grid; justify-items: end; gap: 10px; }
 .segmented { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 12px; background: white; }
 .segmented .button { min-height: 32px; border: 0; }
+.segmented .button.active { background: var(--brand); color: white; }
 .notice.warning { background: var(--warning-soft); color: var(--warning); }
 .copyRow input { min-width: 0; flex: 1; }
 .helpText { color: var(--muted); font-size: 11px; line-height: 1.5; }
@@ -283,7 +296,9 @@ tr:last-child td { border-bottom: 0; }
   .scheduleItem > :last-child { grid-column: 2; }
   .calendarToolbar { grid-template-columns: 1fr auto; }
   .calendarToolbar h2 { grid-row: 1; grid-column: 1 / -1; }
-  .calendarToolbar > .badge { justify-self: end; }
+  .calendarToolbarRight { align-items: flex-end; flex-direction: column-reverse; }
+  .calendarFilters { grid-template-columns: 1fr auto; align-items: start; }
+  .calendarShowFilters { grid-column: 1 / -1; }
   .invoiceMonthPicker, .invoiceActions, .invoiceStatusActions { align-items: stretch; flex-direction: column; }
   .invoiceActions .buttonRow, .invoiceStatusActions .buttonRow { flex-wrap: wrap; }
   .invoiceDocument { padding: 24px 18px; }

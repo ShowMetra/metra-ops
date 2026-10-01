@@ -8,7 +8,7 @@ export default async function ShowsPage({ searchParams }: { searchParams: Promis
   const [{ error, message }, workspace] = await Promise.all([searchParams, requireWorkspace()]);
   const supabase = await createSupabaseServerClient();
   const [{ data: shows }, { data: cast }, { data: performances }, { data: links }, { data: profiles }] = await Promise.all([
-    supabase.from("shows").select("id, name, code, description, partner_user_id, status, archived_at").order("name"),
+    supabase.from("shows").select("id, name, code, description, partner_user_id, status, archived_at, color").order("name"),
     supabase.from("show_artists").select("show_id"),
     supabase.from("performances").select("show_id"),
     supabase.from("schedule_share_links").select("show_id, is_active"),
@@ -35,7 +35,7 @@ export default async function ShowsPage({ searchParams }: { searchParams: Promis
       const performanceCount = performances?.filter(item => item.show_id === show.id).length ?? 0;
       const hasLink = links?.some(item => item.show_id === show.id && item.is_active) ?? false;
       return <article className="card showCard" key={show.id}>
-        <div className="showTop"><div><h2>{show.name}</h2><div className="sub">{show.code ? `${show.code} · ` : ""}{show.description || "No description"}</div></div>{workspace.membership.role === "owner" && <span className="badge brand">Partner · {partnerNames.get(show.partner_user_id) ?? "Unknown"}</span>}</div>
+        <div className="showTop"><div><h2 className="showNameWithColor"><span className="showColorDot" style={{ backgroundColor: show.color }} aria-hidden="true" />{show.name}</h2><div className="sub">{show.code ? `${show.code} · ` : ""}{show.description || "No description"}</div></div>{workspace.membership.role === "owner" && <span className="badge brand">Partner · {partnerNames.get(show.partner_user_id) ?? "Unknown"}</span>}</div>
         <div className="showMeta"><div><span>Artists</span><strong>{artistCount}</strong></div><div><span>Calendar entries</span><strong>{performanceCount}</strong></div><div><span>Schedule link</span><strong>{hasLink ? "Active" : "Not created"}</strong></div><div><span>Access</span><strong>{isPartner ? "Assigned" : "Read only"}</strong></div></div>
         {isPartner && show.status === "planned" && <form action={archiveShow}><input name="show_id" type="hidden" value={show.id} /><ConfirmSubmitButton className="button danger small" type="submit" pendingLabel="Archiving…" confirmMessage={`Archive ${show.name}? Its historical calendar and finance data will remain. Shows with future performances cannot be archived.`}>Archive show</ConfirmSubmitButton></form>}
       </article>;

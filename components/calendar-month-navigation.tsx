@@ -9,12 +9,16 @@ export function CalendarMonthNavigation({
   nextHref,
   monthLabel,
   performanceCount,
+  viewMode,
+  onViewModeChange,
 }: {
   previousHref: string;
   todayHref: string;
   nextHref: string;
   monthLabel: string;
   performanceCount: number;
+  viewMode: "calendar" | "list";
+  onViewModeChange: (mode: "calendar" | "list") => void;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -32,7 +36,13 @@ export function CalendarMonthNavigation({
         <button className="button small" type="button" onClick={() => navigate(nextHref)} disabled={pending} aria-label="Next month">›</button>
       </div>
       <h2>{pending ? "Loading month…" : monthLabel}</h2>
-      <span className="badge">{performanceCount} performances</span>
+      <div className="calendarToolbarRight">
+        <span className="badge">{performanceCount} performances</span>
+        <div className="segmented" aria-label="Calendar view">
+          <button className={`button small${viewMode === "calendar" ? " active" : ""}`} type="button" onClick={() => onViewModeChange("calendar")} aria-pressed={viewMode === "calendar"}>Calendar</button>
+          <button className={`button small${viewMode === "list" ? " active" : ""}`} type="button" onClick={() => onViewModeChange("list")} aria-pressed={viewMode === "list"}>List</button>
+        </div>
+      </div>
     </div>
     {pending && <div className="calendarMonthLoading" role="status" aria-live="polite"><span className="calendarLoadingSpinner" aria-hidden="true" /><strong>Loading calendar…</strong></div>}
   </>;
