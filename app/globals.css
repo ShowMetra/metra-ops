@@ -153,10 +153,15 @@ tr:last-child td { border-bottom: 0; }
 .calendarNav .button:first-child, .calendarNav .button:last-child { width: 36px; padding: 0; font-size: 22px; }
 .calendarMonthLoading { position: absolute; z-index: 5; inset: 68px 0 0; min-height: 260px; display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(255,255,255,.78); color: var(--brand); backdrop-filter: blur(2px); }
 .calendarLoadingSpinner { width: 20px; height: 20px; border: 3px solid var(--brand-soft); border-right-color: var(--brand); border-radius: 50%; animation: navSpin .65s linear infinite; }
-.calendarFilters { padding: 14px 18px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; border-bottom: 1px solid var(--line); background: #faf9f6; }
+.calendarFilters { padding: 12px 18px 16px; border-bottom: 1px solid var(--line); background: #faf9f6; }
+.calendarFilters.collapsed { padding-bottom: 12px; }
+.calendarFiltersToggle { width: 100%; padding: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; border: 0; background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
 .calendarFiltersIntro { display: grid; gap: 3px; }
 .calendarFiltersIntro small { color: var(--muted); font-size: 11px; }
-.calendarShowFilters { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.calendarFiltersToggleMeta { display: flex; align-items: center; gap: 8px; color: var(--brand); font-size: 12px; font-weight: 700; }
+.calendarFiltersChevron { display: inline-block; font-size: 17px; line-height: 1; transition: transform .18s ease; }
+.calendarFiltersToggle[aria-expanded="true"] .calendarFiltersChevron { transform: rotate(180deg); }
+.calendarShowFilters { margin-top: 12px; display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
 .calendarShowFilter { --show-color: var(--brand); display: inline-flex; align-items: center; gap: 7px; min-height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: 99px; background: white; color: var(--muted); cursor: pointer; font-size: 12px; font-weight: 650; }
 .calendarShowFilter input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; }
 .calendarShowFilter.selected { border-color: color-mix(in srgb, var(--show-color) 60%, white); background: color-mix(in srgb, var(--show-color) 10%, white); color: var(--ink); }
@@ -297,8 +302,7 @@ tr:last-child td { border-bottom: 0; }
   .calendarToolbar { grid-template-columns: 1fr auto; }
   .calendarToolbar h2 { grid-row: 1; grid-column: 1 / -1; }
   .calendarToolbarRight { align-items: flex-end; flex-direction: column-reverse; }
-  .calendarFilters { grid-template-columns: 1fr auto; align-items: start; }
-  .calendarShowFilters { grid-column: 1 / -1; }
+  .calendarFiltersToggleMeta > :nth-child(2) { display: none; }
   .invoiceMonthPicker, .invoiceActions, .invoiceStatusActions { align-items: stretch; flex-direction: column; }
   .invoiceActions .buttonRow, .invoiceStatusActions .buttonRow { flex-wrap: wrap; }
   .invoiceDocument { padding: 24px 18px; }

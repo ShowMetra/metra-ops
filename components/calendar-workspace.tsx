@@ -63,6 +63,7 @@ export function CalendarWorkspace({
     return ids.slice(0, 4);
   }, [monthlyPerformances, shows]);
   const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
+  const [filtersOpen, setFiltersOpen] = useState(true);
   const [selectedShowIds, setSelectedShowIds] = useState<string[]>(defaultShowIds);
   const [filtersLoaded, setFiltersLoaded] = useState(false);
 
@@ -112,9 +113,12 @@ export function CalendarWorkspace({
       onViewModeChange={setViewMode}
     />
 
-    <div className="calendarFilters">
-      <div className="calendarFiltersIntro"><strong>Visible shows</strong><small>Select up to 4. Your choice is saved on this device.</small></div>
-      <div className="calendarShowFilters" role="group" aria-label="Visible shows">
+    <div className={`calendarFilters${filtersOpen ? "" : " collapsed"}`}>
+      <button className="calendarFiltersToggle" type="button" onClick={() => setFiltersOpen(open => !open)} aria-expanded={filtersOpen} aria-controls="calendar-show-filters">
+        <span className="calendarFiltersIntro"><strong>Visible shows</strong><small>{filtersOpen ? "Select up to 4. Your choice is saved on this device." : `${selectedShowIds.length} shows selected`}</small></span>
+        <span className="calendarFiltersToggleMeta"><span className="badge brand">{selectedShowIds.length}/4</span><span>{filtersOpen ? "Hide" : "Show"}</span><span className="calendarFiltersChevron" aria-hidden="true">⌄</span></span>
+      </button>
+      {filtersOpen && <div className="calendarShowFilters" id="calendar-show-filters" role="group" aria-label="Visible shows">
         {shows.map(show => {
           const checked = selected.has(show.id);
           const disabled = !checked && selectedShowIds.length >= 4;
@@ -124,8 +128,7 @@ export function CalendarWorkspace({
             <span>{show.name}</span>
           </label>;
         })}
-      </div>
-      <span className="badge brand">{selectedShowIds.length}/4</span>
+      </div>}
     </div>
 
     {viewMode === "calendar" ? <div className="calendarScroll"><div className="monthCalendar">
