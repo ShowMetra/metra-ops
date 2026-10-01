@@ -57,7 +57,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
       .gte("starts_at", queryStart)
       .lt("starts_at", queryEnd)
       .order("starts_at"),
-    supabase.from("shows").select("id, name").eq("status", "planned").order("name"),
+    supabase.from("shows").select("id, name").eq("status", "planned").is("archived_at", null).order("name"),
     supabase.from("hotels").select("id, name").eq("status", "active").order("name"),
     supabase.from("profiles").select("id, full_name, email"),
   ]);

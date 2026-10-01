@@ -1,14 +1,15 @@
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { SubmitButton } from "@/components/submit-button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireWorkspace } from "@/lib/workspace";
-import { createExpense } from "./actions";
+import { createExpense, deleteExpense } from "./actions";
 
 export default async function ExpensesPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
   const [{ error, message }, workspace] = await Promise.all([searchParams, requireWorkspace()]);
   const supabase = await createSupabaseServerClient();
   const [{ data: shows }, { data: expenses }] = await Promise.all([
-    supabase.from("shows").select("id, name").eq("status", "planned").order("name"),
-    supabase.from("expenses").select("id, expense_date, category, description, amount, currency, paid_by, status, shows(name)").order("expense_date", { ascending: false }).limit(30),
+    supabase.from("shows").select("id, name").eq("status", "planned").is("archived_at", null).order("name"),
+    supabase.from("expenses").select("id, expense_date, category, description, amount, currency, paid_by, status, created_by, shows(name)").order("expense_date", { ascending: false }).limit(30),
   ]);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -30,7 +31,9 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
       <section className="card"><div className="sectionHeader"><h2>Recent expenses</h2><span className="badge">{expenses?.length ?? 0}</span></div><div className="sectionBody"><div className="list">
         {(expenses ?? []).map(expense => {
           const show = Array.isArray(expense.shows) ? expense.shows[0] : expense.shows;
-          return <div className="listItem" key={expense.id}><div><div className="strong">{expense.category} · {new Intl.NumberFormat("en-GB", { style: "currency", currency: expense.currency }).format(expense.amount)}</div><div className="sub">{show?.name ?? "Show"} · {new Date(`${expense.expense_date}T00:00:00Z`).toLocaleDateString("en-GB")} · Paid by {expense.paid_by}</div></div><span className={`badge ${expense.status === "approved" ? "success" : expense.status === "rejected" ? "danger" : "warning"}`}>{expense.status}</span></div>;
+          const canDelete = ["draft", "rejected"].includes(expense.status)
+            && (workspace.membership.role === "owner" || expense.created_by === workspace.user.id);
+          return <div className="listItem" key={expense.id}><div><div className="strong">{expense.category} · {new Intl.NumberFormat("en-GB", { style: "currency", currency: expense.currency }).format(expense.amount)}</div><div className="sub">{show?.name ?? "Show"} · {new Date(`${expense.expense_date}T00:00:00Z`).toLocaleDateString("en-GB")} · Paid by {expense.paid_by}</div></div><div className="listItemActions"><span className={`badge ${expense.status === "approved" ? "success" : expense.status === "rejected" ? "danger" : "warning"}`}>{expense.status}</span>{canDelete && <form action={deleteExpense}><input name="expense_id" type="hidden" value={expense.id} /><ConfirmSubmitButton className="button danger small" type="submit" pendingLabel="Deleting…" confirmMessage="Delete this expense permanently? This cannot be undone.">Delete</ConfirmSubmitButton></form>}</div></div>;
         })}
         {!expenses?.length && <div className="emptyState">No expenses yet.</div>}
       </div></div></section>

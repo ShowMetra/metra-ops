@@ -27,6 +27,7 @@ export async function createExpense(formData: FormData) {
     .eq("organization_id", workspace.organization.id)
     .eq("partner_user_id", workspace.user.id)
     .eq("status", "planned")
+    .is("archived_at", null)
     .maybeSingle();
   if (!show) redirect("/expenses?error=Choose+one+of+your+planned+shows");
 
@@ -45,4 +46,34 @@ export async function createExpense(formData: FormData) {
   if (error) redirect("/expenses?error=Could+not+save+the+expense");
   revalidatePath("/expenses");
   redirect(`/expenses?message=${status === "submitted" ? "Expense+submitted" : "Draft+saved"}`);
+}
+
+export async function deleteExpense(formData: FormData) {
+  const workspace = await requireWorkspace();
+  const expenseId = String(formData.get("expense_id") ?? "");
+  if (!expenseId) redirect("/expenses?error=Expense+not+found");
+
+  const supabase = await createSupabaseServerClient();
+  let expenseQuery = supabase.from("expenses")
+    .select("id, status, created_by")
+    .eq("id", expenseId)
+    .eq("organization_id", workspace.organization.id)
+    .in("status", ["draft", "rejected"]);
+  if (workspace.membership.role === "partner") expenseQuery = expenseQuery.eq("created_by", workspace.user.id);
+  const { data: expense } = await expenseQuery.maybeSingle();
+  if (!expense) redirect("/expenses?error=Only+your+draft+or+rejected+expenses+can+be+deleted");
+
+  const { data: deleted, error } = await supabase.from("expenses")
+    .delete()
+    .eq("id", expenseId)
+    .eq("organization_id", workspace.organization.id)
+    .in("status", ["draft", "rejected"])
+    .select("id")
+    .maybeSingle();
+  if (error || !deleted) redirect("/expenses?error=Could+not+delete+the+expense.+The+month+may+be+closed");
+
+  revalidatePath("/expenses");
+  revalidatePath("/finance");
+  revalidatePath("/dashboard");
+  redirect("/expenses?message=Expense+deleted");
 }

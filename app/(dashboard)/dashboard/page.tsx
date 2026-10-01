@@ -20,7 +20,7 @@ export default async function DashboardPage() {
 
   const [{ data: upcoming }, { count: showCount }, { count: artistCount }, { count: submittedExpenses }] = await Promise.all([
     supabase.from("performances").select("id, starts_at, ends_at, shows(name), hotels(name)").gte("starts_at", start).lt("starts_at", end).order("starts_at").limit(6),
-    supabase.from("shows").select("id", { count: "exact", head: true }).eq("status", "planned"),
+    supabase.from("shows").select("id", { count: "exact", head: true }).eq("status", "planned").is("archived_at", null),
     supabase.from("artists").select("id", { count: "exact", head: true }).eq("status", "active"),
     supabase.from("expenses").select("id", { count: "exact", head: true }).eq("status", "submitted"),
   ]);

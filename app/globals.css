@@ -123,6 +123,19 @@ tr:last-child td { border-bottom: 0; }
 .list { display: grid; gap: 10px; }
 .listItem { padding: 14px 0; display: flex; justify-content: space-between; gap: 18px; border-bottom: 1px solid #f0efeb; }
 .listItem:last-child { border-bottom: 0; }
+.listItemActions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+
+.archivePanel { overflow: hidden; }
+.archivePanel > summary { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 22px; cursor: pointer; list-style: none; }
+.archivePanel > summary::-webkit-details-marker { display: none; }
+.archivePanel > summary span:first-child { display: grid; gap: 4px; }
+.archivePanel > summary small { color: var(--muted); font-weight: 500; }
+.archivePanel[open] > summary { border-bottom: 1px solid var(--line); }
+.archivePanel .sectionBody { padding-top: 10px; }
+.archiveList { display: grid; }
+.archiveItem { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 13px 0; border-bottom: 1px solid #f0efeb; }
+.archiveItem:last-child { border-bottom: 0; }
+.archiveItemActions { display: flex; align-items: center; gap: 8px; }
 
 .calendarPageHeader { margin-bottom: 20px; }
 .calendarCreate { margin-bottom: 18px; overflow: hidden; }

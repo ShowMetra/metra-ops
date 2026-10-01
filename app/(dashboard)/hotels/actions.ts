@@ -47,8 +47,8 @@ export async function createHotelRate(formData: FormData) {
 
   const supabase = await createSupabaseServerClient();
   const [{ data: hotel }, { data: show }] = await Promise.all([
-    supabase.from("hotels").select("id").eq("id", hotelId).eq("organization_id", workspace.organization.id).maybeSingle(),
-    supabase.from("shows").select("id").eq("id", showId).eq("organization_id", workspace.organization.id).eq("partner_user_id", workspace.user.id).eq("status", "planned").maybeSingle(),
+    supabase.from("hotels").select("id").eq("id", hotelId).eq("organization_id", workspace.organization.id).eq("status", "active").maybeSingle(),
+    supabase.from("shows").select("id").eq("id", showId).eq("organization_id", workspace.organization.id).eq("partner_user_id", workspace.user.id).eq("status", "planned").is("archived_at", null).maybeSingle(),
   ]);
   if (!hotel || !show) redirect(hotelsError("Choose an available hotel and show."));
 
@@ -65,4 +65,56 @@ export async function createHotelRate(formData: FormData) {
 
   revalidatePath("/hotels");
   redirect("/hotels?message=Hotel+rate+created");
+}
+
+export async function archiveHotel(formData: FormData) {
+  const workspace = await requireWorkspace();
+  if (workspace.membership.role !== "partner") redirect(hotelsError("Only partners can archive hotels."));
+  const hotelId = String(formData.get("hotel_id") ?? "");
+  if (!hotelId) redirect(hotelsError("Hotel not found."));
+
+  const supabase = await createSupabaseServerClient();
+  const [{ data: hotel }, { data: futurePerformance }] = await Promise.all([
+    supabase.from("hotels").select("id").eq("id", hotelId).eq("organization_id", workspace.organization.id).eq("status", "active").maybeSingle(),
+    supabase.from("performances").select("id").eq("hotel_id", hotelId).gte("starts_at", new Date().toISOString()).limit(1).maybeSingle(),
+  ]);
+  if (!hotel) redirect(hotelsError("Hotel not found."));
+  if (futurePerformance) redirect(hotelsError("Delete or move this hotel’s future performances before archiving it."));
+
+  const { data: archived, error } = await supabase.from("hotels")
+    .update({ status: "inactive" })
+    .eq("id", hotelId)
+    .eq("organization_id", workspace.organization.id)
+    .eq("status", "active")
+    .select("id")
+    .maybeSingle();
+  if (error?.message.includes("future performances")) redirect(hotelsError("Delete or move this hotel’s future performances before archiving it."));
+  if (error || !archived) redirect(hotelsError("Could not archive the hotel."));
+
+  revalidatePath("/hotels");
+  revalidatePath("/calendar");
+  revalidatePath("/dashboard");
+  redirect("/hotels?message=Hotel+archived");
+}
+
+export async function restoreHotel(formData: FormData) {
+  const workspace = await requireWorkspace();
+  if (workspace.membership.role !== "partner") redirect(hotelsError("Only partners can restore hotels."));
+  const hotelId = String(formData.get("hotel_id") ?? "");
+  if (!hotelId) redirect(hotelsError("Hotel not found."));
+
+  const supabase = await createSupabaseServerClient();
+  const { data: restored, error } = await supabase.from("hotels")
+    .update({ status: "active" })
+    .eq("id", hotelId)
+    .eq("organization_id", workspace.organization.id)
+    .eq("status", "inactive")
+    .select("id")
+    .maybeSingle();
+  if (error || !restored) redirect(hotelsError("Could not restore the hotel."));
+
+  revalidatePath("/hotels");
+  revalidatePath("/calendar");
+  revalidatePath("/dashboard");
+  redirect("/hotels?message=Hotel+restored");
 }

@@ -32,3 +32,63 @@ export async function createShow(formData: FormData) {
   revalidatePath("/dashboard");
   redirect("/shows?message=Show+created");
 }
+
+export async function archiveShow(formData: FormData) {
+  const workspace = await requireWorkspace();
+  if (workspace.membership.role !== "partner") redirect(showsError("Only partners can archive shows."));
+  const showId = String(formData.get("show_id") ?? "");
+  if (!showId) redirect(showsError("Show not found."));
+
+  const supabase = await createSupabaseServerClient();
+  const [{ data: show }, { data: futurePerformance }] = await Promise.all([
+    supabase.from("shows").select("id").eq("id", showId).eq("organization_id", workspace.organization.id).eq("partner_user_id", workspace.user.id).eq("status", "planned").is("archived_at", null).maybeSingle(),
+    supabase.from("performances").select("id").eq("show_id", showId).gte("starts_at", new Date().toISOString()).limit(1).maybeSingle(),
+  ]);
+  if (!show) redirect(showsError("Show not found."));
+  if (futurePerformance) redirect(showsError("Delete or move this show’s future performances before archiving it."));
+
+  const { data: archived, error } = await supabase.from("shows")
+    .update({ archived_at: new Date().toISOString() })
+    .eq("id", showId)
+    .eq("organization_id", workspace.organization.id)
+    .eq("partner_user_id", workspace.user.id)
+    .is("archived_at", null)
+    .select("id")
+    .maybeSingle();
+  if (error || !archived) redirect(showsError("Could not archive the show."));
+
+  revalidatePath("/shows");
+  revalidatePath("/artists");
+  revalidatePath("/hotels");
+  revalidatePath("/calendar");
+  revalidatePath("/expenses");
+  revalidatePath("/dashboard");
+  redirect("/shows?message=Show+archived");
+}
+
+export async function restoreShow(formData: FormData) {
+  const workspace = await requireWorkspace();
+  if (workspace.membership.role !== "partner") redirect(showsError("Only partners can restore shows."));
+  const showId = String(formData.get("show_id") ?? "");
+  if (!showId) redirect(showsError("Show not found."));
+
+  const supabase = await createSupabaseServerClient();
+  const { data: restored, error } = await supabase.from("shows")
+    .update({ archived_at: null })
+    .eq("id", showId)
+    .eq("organization_id", workspace.organization.id)
+    .eq("partner_user_id", workspace.user.id)
+    .eq("status", "planned")
+    .not("archived_at", "is", null)
+    .select("id")
+    .maybeSingle();
+  if (error || !restored) redirect(showsError("Could not restore the show."));
+
+  revalidatePath("/shows");
+  revalidatePath("/artists");
+  revalidatePath("/hotels");
+  revalidatePath("/calendar");
+  revalidatePath("/expenses");
+  revalidatePath("/dashboard");
+  redirect("/shows?message=Show+restored");
+}

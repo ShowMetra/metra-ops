@@ -1,21 +1,24 @@
 import { Fragment } from "react";
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { ContractFields } from "@/components/contract-fields";
 import { SubmitButton } from "@/components/submit-button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireWorkspace } from "@/lib/workspace";
-import { createArtist, createArtistContract } from "./actions";
+import { archiveArtist, createArtist, createArtistContract, restoreArtist } from "./actions";
 
 export default async function ArtistsPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
   const [{ error, message }, workspace] = await Promise.all([searchParams, requireWorkspace()]);
   const supabase = await createSupabaseServerClient();
   const [{ data: artists }, { data: shows }] = await Promise.all([
-    supabase.from("artists").select("id, full_name, artist_code, status, artist_contracts(id, show_id, payment_type, monthly_salary, extra_day_rate, daily_rate, currency, valid_from, valid_to, shows(name)), show_artists(show_id, shows(name))").order("full_name"),
-    supabase.from("shows").select("id, name").eq("status", "planned").order("name"),
+    supabase.from("artists").select("id, full_name, artist_code, status, artist_contracts(id, show_id, payment_type, monthly_salary, extra_day_rate, daily_rate, currency, valid_from, valid_to, shows(name)), show_artists(show_id, shows(name, status, archived_at))").order("full_name"),
+    supabase.from("shows").select("id, name").eq("status", "planned").is("archived_at", null).order("name"),
   ]);
   const now = new Date();
   const today = now.toISOString().slice(0, 10);
   const nextMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString().slice(0, 10);
   const isPartner = workspace.membership.role === "partner";
+  const activeArtists = (artists ?? []).filter(artist => artist.status === "active");
+  const archivedArtists = (artists ?? []).filter(artist => artist.status === "inactive");
   const formatDate = (value: string) => new Date(`${value}T00:00:00Z`).toLocaleDateString("en-GB", { timeZone: "UTC" });
 
   return <>
@@ -31,12 +34,12 @@ export default async function ArtistsPage({ searchParams }: { searchParams: Prom
       </form> : <div className="emptyState">Create a show first, then add its artists.</div>}
     </div></section>}
 
-    <section className="card"><div className="sectionHeader"><h2>Artists & contracts</h2><span className="badge">{artists?.length ?? 0}</span></div><div className="sectionBody tableWrap"><table><thead><tr><th>Artist</th><th>Show</th><th>Contract history</th><th>Status</th></tr></thead><tbody>
-      {(artists ?? []).map(artist => {
+    <section className="card"><div className="sectionHeader"><h2>Artists & contracts</h2><span className="badge">{activeArtists.length}</span></div><div className="sectionBody tableWrap"><table><thead><tr><th>Artist</th><th>Show</th><th>Contract history</th><th>Status</th>{isPartner && <th>Actions</th>}</tr></thead><tbody>
+      {activeArtists.map(artist => {
         const assignedShows = (artist.show_artists ?? []).map(item => {
           const show = Array.isArray(item.shows) ? item.shows[0] : item.shows;
-          return { id: item.show_id, name: show?.name ?? "Show" };
-        });
+          return { id: item.show_id, name: show?.name ?? "Show", active: show?.status === "planned" && !show?.archived_at };
+        }).filter(show => show.active);
         const contracts = [...(artist.artist_contracts ?? [])].sort((left, right) => right.valid_from.localeCompare(left.valid_from));
         return <Fragment key={artist.id}>
           <tr className={isPartner ? "artistRowWithEditor" : undefined}>
@@ -48,8 +51,9 @@ export default async function ArtistsPage({ searchParams }: { searchParams: Prom
               return <div key={contract.id}><strong>{contract.payment_type === "daily" ? `${format(contract.daily_rate)} / day` : `${format(contract.monthly_salary)} / month`}</strong><div className="sub">{show?.name ?? "Show"}{contract.payment_type === "monthly" && Number(contract.extra_day_rate) > 0 ? ` · ${format(contract.extra_day_rate)} extra day` : ""}</div><div className="sub">{formatDate(contract.valid_from)} – {contract.valid_to ? formatDate(contract.valid_to) : "open ended"}</div></div>;
             })}</div> : "—"}</td>
             <td><span className={`badge ${artist.status === "active" ? "success" : "warning"}`}>{artist.status}</span></td>
+            {isPartner && <td><form action={archiveArtist}><input name="artist_id" type="hidden" value={artist.id} /><ConfirmSubmitButton className="button danger small" type="submit" pendingLabel="Archiving…" confirmMessage={`Archive ${artist.full_name}? Contract and payroll history will remain available.`}>Archive</ConfirmSubmitButton></form></td>}
           </tr>
-          {isPartner && <tr className="artistContractRow"><td colSpan={4}>{assignedShows.length ? <details className="artistContractEditor"><summary>Add contract</summary><form action={createArtistContract} className="formGrid compactForm">
+          {isPartner && <tr className="artistContractRow"><td colSpan={5}>{assignedShows.length ? <details className="artistContractEditor"><summary>Add contract</summary><form action={createArtistContract} className="formGrid compactForm">
               <input name="artist_id" type="hidden" value={artist.id} />
               <div className="field full"><label htmlFor={`contract_show_${artist.id}`}>Show</label><select id={`contract_show_${artist.id}`} name="show_id" required>{assignedShows.map(show => <option key={show.id} value={show.id}>{show.name}</option>)}</select></div>
               <ContractFields idPrefix={`contract_${artist.id}`} currency={workspace.organization.baseCurrency} defaultFrom={nextMonthStart} />
@@ -57,7 +61,10 @@ export default async function ArtistsPage({ searchParams }: { searchParams: Prom
             </form></details> : <span className="muted">No assigned show</span>}</td></tr>}
         </Fragment>;
       })}
-      {!artists?.length && <tr><td colSpan={4}><div className="emptyState">No artists have been added yet.</div></td></tr>}
+      {!activeArtists.length && <tr><td colSpan={isPartner ? 5 : 4}><div className="emptyState">No active artists. Add one or restore an archived artist.</div></td></tr>}
     </tbody></table></div></section>
+    {archivedArtists.length > 0 && <details className="card section archivePanel"><summary><span><strong>Archived artists</strong><small>{archivedArtists.length} hidden from new contracts</small></span><span className="badge warning">{archivedArtists.length}</span></summary><div className="sectionBody"><div className="archiveList">
+      {archivedArtists.map(artist => <div className="archiveItem" key={artist.id}><div><div className="strong">{artist.full_name}</div><div className="sub">{artist.artist_code || "No code"} · Contract history retained</div></div><div className="archiveItemActions"><span className="badge warning">Archived</span>{isPartner && <form action={restoreArtist}><input name="artist_id" type="hidden" value={artist.id} /><SubmitButton className="button small" type="submit" pendingLabel="Restoring…">Restore</SubmitButton></form>}</div></div>)}
+    </div></div></details>}
   </>;
 }

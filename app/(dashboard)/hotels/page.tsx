@@ -1,25 +1,29 @@
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { SubmitButton } from "@/components/submit-button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireWorkspace } from "@/lib/workspace";
-import { createHotel, createHotelRate } from "./actions";
+import { archiveHotel, createHotel, createHotelRate, restoreHotel } from "./actions";
 
 export default async function HotelsPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
   const [{ error, message }, workspace] = await Promise.all([searchParams, requireWorkspace()]);
   const supabase = await createSupabaseServerClient();
   const [{ data: hotels }, { data: shows }, { data: rates }, { data: profiles }] = await Promise.all([
     supabase.from("hotels").select("id, name, address, billing_name, billing_email, tax_id, status").order("name"),
-    supabase.from("shows").select("id, name").eq("status", "planned").order("name"),
-    supabase.from("hotel_show_rates").select("id, price_per_performance, currency, valid_from, valid_to, hotels(name), shows(name, partner_user_id)").order("valid_from", { ascending: false }),
+    supabase.from("shows").select("id, name").eq("status", "planned").is("archived_at", null).order("name"),
+    supabase.from("hotel_show_rates").select("id, price_per_performance, currency, valid_from, valid_to, hotels!inner(name, status), shows(name, partner_user_id)").eq("hotels.status", "active").order("valid_from", { ascending: false }),
     supabase.from("profiles").select("id, full_name, email"),
   ]);
   const partnerNames = new Map((profiles ?? []).map(profile => [profile.id, profile.full_name || profile.email || "Partner"]));
+  const activeHotels = (hotels ?? []).filter(hotel => hotel.status === "active");
+  const archivedHotels = (hotels ?? []).filter(hotel => hotel.status === "inactive");
+  const isPartner = workspace.membership.role === "partner";
   const today = new Date().toISOString().slice(0, 10);
 
   return <>
     <div className="pageHeader"><div><p className="eyebrow">Organization directory</p><h1>Hotels & rates</h1><p className="lede">Partners maintain one shared hotel list and set rates for their shows. The owner can review everything.</p></div></div>
     {error && <div className="notice danger">{error}</div>}{message && <div className="notice success">{message}</div>}
     <div className="grid2">
-      {workspace.membership.role === "partner" && <section className="card"><div className="sectionHeader"><h2>Add hotel</h2><span className="badge brand">Partner</span></div><div className="sectionBody">
+      {isPartner && <section className="card"><div className="sectionHeader"><h2>Add hotel</h2><span className="badge brand">Partner</span></div><div className="sectionBody">
         <form action={createHotel} className="formGrid">
           <div className="field full"><label htmlFor="hotel_name">Hotel name</label><input id="hotel_name" name="name" required /></div>
           <div className="field full"><label htmlFor="hotel_address">Address</label><input id="hotel_address" name="address" /></div>
@@ -29,9 +33,9 @@ export default async function HotelsPage({ searchParams }: { searchParams: Promi
           <div className="field full"><SubmitButton className="button primary" type="submit" pendingLabel="Creating hotel…">Create hotel</SubmitButton></div>
         </form>
       </div></section>}
-      {workspace.membership.role === "partner" && <section className="card"><div className="sectionHeader"><h2>Add hotel rate</h2><span className="badge">Per performance</span></div><div className="sectionBody">
-        {hotels?.length && shows?.length ? <form action={createHotelRate} className="formGrid">
-          <div className="field"><label htmlFor="rate_hotel">Hotel</label><select id="rate_hotel" name="hotel_id" required>{hotels.map(hotel => <option key={hotel.id} value={hotel.id}>{hotel.name}</option>)}</select></div>
+      {isPartner && <section className="card"><div className="sectionHeader"><h2>Add hotel rate</h2><span className="badge">Per performance</span></div><div className="sectionBody">
+        {activeHotels.length && shows?.length ? <form action={createHotelRate} className="formGrid">
+          <div className="field"><label htmlFor="rate_hotel">Hotel</label><select id="rate_hotel" name="hotel_id" required>{activeHotels.map(hotel => <option key={hotel.id} value={hotel.id}>{hotel.name}</option>)}</select></div>
           <div className="field"><label htmlFor="rate_show">Show</label><select id="rate_show" name="show_id" required>{shows.map(show => <option key={show.id} value={show.id}>{show.name}</option>)}</select></div>
           <div className="field"><label htmlFor="rate_price">Price ({workspace.organization.baseCurrency})</label><input id="rate_price" name="price_per_performance" type="number" min="0" step="0.01" required /></div>
           <div className="field"><label htmlFor="rate_from">Valid from</label><input id="rate_from" name="valid_from" type="date" defaultValue={today} required /></div>
@@ -39,9 +43,9 @@ export default async function HotelsPage({ searchParams }: { searchParams: Promi
         </form> : <div className="emptyState">Create a hotel and an assigned show before adding a rate.</div>}
       </div></section>}
     </div>
-    <section className="card section"><div className="sectionHeader"><h2>Hotel directory</h2><span className="badge">{hotels?.length ?? 0}</span></div><div className="sectionBody tableWrap"><table><thead><tr><th>Hotel</th><th>Address</th><th>Billing</th><th>Status</th></tr></thead><tbody>
-      {(hotels ?? []).map(hotel => <tr key={hotel.id}><td className="strong">{hotel.name}</td><td>{hotel.address || "—"}</td><td><div>{hotel.billing_name || "—"}</div><div className="sub">{hotel.billing_email || hotel.tax_id || "No billing details"}</div></td><td><span className={`badge ${hotel.status === "active" ? "success" : "warning"}`}>{hotel.status}</span></td></tr>)}
-      {!hotels?.length && <tr><td colSpan={4}><div className="emptyState">No hotels yet.</div></td></tr>}
+    <section className="card section"><div className="sectionHeader"><h2>Hotel directory</h2><span className="badge">{activeHotels.length}</span></div><div className="sectionBody tableWrap"><table><thead><tr><th>Hotel</th><th>Address</th><th>Billing</th><th>Status</th>{isPartner && <th>Actions</th>}</tr></thead><tbody>
+      {activeHotels.map(hotel => <tr key={hotel.id}><td className="strong">{hotel.name}</td><td>{hotel.address || "—"}</td><td><div>{hotel.billing_name || "—"}</div><div className="sub">{hotel.billing_email || hotel.tax_id || "No billing details"}</div></td><td><span className="badge success">active</span></td>{isPartner && <td><form action={archiveHotel}><input name="hotel_id" type="hidden" value={hotel.id} /><ConfirmSubmitButton className="button danger small" type="submit" pendingLabel="Archiving…" confirmMessage={`Archive ${hotel.name}? Historical performances, rates and invoices will remain. Hotels with future performances cannot be archived.`}>Archive</ConfirmSubmitButton></form></td>}</tr>)}
+      {!activeHotels.length && <tr><td colSpan={isPartner ? 5 : 4}><div className="emptyState">No active hotels yet.</div></td></tr>}
     </tbody></table></div></section>
     <section className="card section"><div className="sectionHeader"><h2>Current rates</h2><span className="badge">{rates?.length ?? 0}</span></div><div className="sectionBody tableWrap"><table><thead><tr><th>Hotel</th><th>Show</th>{workspace.membership.role === "owner" && <th>Partner</th>}<th>Valid from</th><th className="num">Rate</th></tr></thead><tbody>
       {(rates ?? []).map(rate => {
@@ -51,5 +55,8 @@ export default async function HotelsPage({ searchParams }: { searchParams: Promi
       })}
       {!rates?.length && <tr><td colSpan={workspace.membership.role === "owner" ? 5 : 4}><div className="emptyState">No rates yet.</div></td></tr>}
     </tbody></table></div></section>
+    {archivedHotels.length > 0 && <details className="card section archivePanel"><summary><span><strong>Archived hotels</strong><small>{archivedHotels.length} hidden from new rates and calendar entries</small></span><span className="badge warning">{archivedHotels.length}</span></summary><div className="sectionBody tableWrap"><table><thead><tr><th>Hotel</th><th>Address</th><th>Status</th>{isPartner && <th>Actions</th>}</tr></thead><tbody>
+      {archivedHotels.map(hotel => <tr key={hotel.id}><td className="strong">{hotel.name}</td><td>{hotel.address || "—"}</td><td><span className="badge warning">archived</span></td>{isPartner && <td><form action={restoreHotel}><input name="hotel_id" type="hidden" value={hotel.id} /><SubmitButton className="button small" type="submit" pendingLabel="Restoring…">Restore</SubmitButton></form></td>}</tr>)}
+    </tbody></table></div></details>}
   </>;
 }

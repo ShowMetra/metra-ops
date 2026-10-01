@@ -61,6 +61,7 @@ export async function createArtist(formData: FormData) {
     .eq("organization_id", workspace.organization.id)
     .eq("partner_user_id", workspace.user.id)
     .eq("status", "planned")
+    .is("archived_at", null)
     .maybeSingle();
   if (!show) redirect(artistsError("Choose an available show."));
 
@@ -95,8 +96,8 @@ export async function createArtistContract(formData: FormData) {
 
   const supabase = await createSupabaseServerClient();
   const [{ data: artist }, { data: show }] = await Promise.all([
-    supabase.from("artists").select("id").eq("id", artistId).eq("organization_id", workspace.organization.id).eq("partner_user_id", workspace.user.id).maybeSingle(),
-    supabase.from("shows").select("id").eq("id", showId).eq("organization_id", workspace.organization.id).eq("partner_user_id", workspace.user.id).eq("status", "planned").maybeSingle(),
+    supabase.from("artists").select("id").eq("id", artistId).eq("organization_id", workspace.organization.id).eq("partner_user_id", workspace.user.id).eq("status", "active").maybeSingle(),
+    supabase.from("shows").select("id").eq("id", showId).eq("organization_id", workspace.organization.id).eq("partner_user_id", workspace.user.id).eq("status", "planned").is("archived_at", null).maybeSingle(),
   ]);
   if (!artist || !show) redirect(artistsError("Choose one of your artists and shows."));
 
@@ -118,4 +119,48 @@ export async function createArtistContract(formData: FormData) {
   revalidatePath("/artists");
   revalidatePath("/finance");
   redirect("/artists?message=Contract+created");
+}
+
+export async function archiveArtist(formData: FormData) {
+  const workspace = await requireWorkspace();
+  if (workspace.membership.role !== "partner") redirect(artistsError("Only partners can archive artists."));
+  const artistId = String(formData.get("artist_id") ?? "");
+  if (!artistId) redirect(artistsError("Artist not found."));
+
+  const supabase = await createSupabaseServerClient();
+  const { data: archived, error } = await supabase.from("artists")
+    .update({ status: "inactive" })
+    .eq("id", artistId)
+    .eq("organization_id", workspace.organization.id)
+    .eq("partner_user_id", workspace.user.id)
+    .eq("status", "active")
+    .select("id")
+    .maybeSingle();
+  if (error || !archived) redirect(artistsError("Could not archive the artist."));
+
+  revalidatePath("/artists");
+  revalidatePath("/dashboard");
+  redirect("/artists?message=Artist+archived");
+}
+
+export async function restoreArtist(formData: FormData) {
+  const workspace = await requireWorkspace();
+  if (workspace.membership.role !== "partner") redirect(artistsError("Only partners can restore artists."));
+  const artistId = String(formData.get("artist_id") ?? "");
+  if (!artistId) redirect(artistsError("Artist not found."));
+
+  const supabase = await createSupabaseServerClient();
+  const { data: restored, error } = await supabase.from("artists")
+    .update({ status: "active" })
+    .eq("id", artistId)
+    .eq("organization_id", workspace.organization.id)
+    .eq("partner_user_id", workspace.user.id)
+    .eq("status", "inactive")
+    .select("id")
+    .maybeSingle();
+  if (error || !restored) redirect(artistsError("Could not restore the artist."));
+
+  revalidatePath("/artists");
+  revalidatePath("/dashboard");
+  redirect("/artists?message=Artist+restored");
 }
